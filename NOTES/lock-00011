@@ -1,0 +1,146 @@
+You should NOT be creating random empty files yet.
+
+We are now at the point where I should start giving you the actual starter files in a controlled order.
+
+The goal is:
+
+* build a working runtime immediately
+* avoid placeholder chaos
+* avoid V2-style drift
+
+So here’s what you should do RIGHT NOW.
+
+---
+
+# STEP 1 — CREATE ONLY THESE FOLDERS
+
+```txt id="v0g4z7"
+pikaverse-v3/
+│
+├── assets/
+├── hunts/
+├── nodes/
+├── player/
+└── runtime/
+```
+
+Nothing else yet.
+
+Keep it minimal.
+
+---
+
+# STEP 2 — CREATE ONLY THESE FILES
+
+```txt id="7u12yw"
+runtime/
+├── gameRuntime.js
+├── loader.js
+├── renderer.js
+└── stateStore.js
+
+player/
+├── index.html
+├── main.js
+└── styles.css
+
+hunts/
+└── demo-hunt.json
+```
+
+That’s it.
+
+Do NOT create:
+
+* router.js
+* effects.js
+* conditions.js
+* creator/
+* rewards/
+* sponsors/
+
+Yet.
+
+We’ll add those AFTER the runtime loop works.
+
+---
+
+# STEP 3 — I WILL GIVE YOU THE FILE CONTENTS
+
+Yes.
+From this point forward,
+I’ll start giving you the actual contents of the files in implementation order.
+
+You should:
+
+* create the files
+* paste the code exactly
+* test incrementally
+
+That’s the correct workflow now.
+
+---
+
+# WHAT WE ARE BUILDING FIRST
+
+The smallest possible V3 runtime:
+
+```txt id="uijrrv"
+load hunt
+↓
+render node
+↓
+click transition
+↓
+move to next node
+↓
+re-render
+```
+
+That’s the first milestone.
+
+---
+
+# IMPORTANT
+
+Do NOT try to:
+
+* improve architecture yet
+* optimize yet
+* add fancy systems yet
+* invent extra files yet
+
+Right now we want:
+
+> stable minimal execution
+
+That’s the foundation everything else grows from.
+
+---
+
+# WHAT HAPPENS NEXT
+
+In the next step,
+I’ll give you:
+
+## `demo-hunt.json`
+
+Then:
+
+* `stateStore.js`
+* `loader.js`
+* `renderer.js`
+* `gameRuntime.js`
+* `main.js`
+* `index.html`
+* `styles.css`
+
+in the correct order.
+
+That way:
+
+* nothing is premature
+* nothing becomes dead code
+* the runtime stays clean from day one
+
+You’re now officially transitioning from architecture planning into implementation phase.
