@@ -1,0 +1,167 @@
+Perfect.
+We start with the hunt data itself.
+
+Everything in V3 revolves around:
+
+> hunts as data.
+
+So the FIRST real file is:
+
+---
+
+# FILE: `hunts/demo-hunt.json`
+
+Create this file and paste this EXACTLY:
+
+```json
+{
+  "id": "demo_hunt",
+
+  "title": "Pikaverse Demo Hunt",
+
+  "startNode": "start_001",
+
+  "nodes": [
+    {
+      "id": "start_001",
+
+      "type": "start",
+
+      "title": "Welcome",
+
+      "content": "Your adventure begins in a dimly lit chamber.",
+
+      "transitions": [
+        {
+          "label": "Enter the portal",
+          "target": "portal_001"
+        }
+      ]
+    },
+
+    {
+      "id": "portal_001",
+
+      "type": "portal",
+
+      "title": "Portal Room",
+
+      "content": "A glowing portal hums with strange energy.",
+
+      "transitions": [
+        {
+          "label": "Continue forward",
+          "target": "puzzle_001"
+        }
+      ]
+    },
+
+    {
+      "id": "puzzle_001",
+
+      "type": "puzzle",
+
+      "title": "Ancient Puzzle",
+
+      "content": "Symbols on the wall begin shifting before your eyes.",
+
+      "transitions": [
+        {
+          "label": "Solve the puzzle",
+          "target": "end_001"
+        }
+      ]
+    },
+
+    {
+      "id": "end_001",
+
+      "type": "end",
+
+      "title": "The End",
+
+      "content": "You completed the first V3 runtime demo.",
+
+      "transitions": []
+    }
+  ]
+}
+```
+
+---
+
+# WHY THIS FILE MATTERS
+
+This file establishes:
+
+```txt id="w3p4e6"
+- node structure
+- transition structure
+- hunt structure
+- modular gameplay flow
+```
+
+This is the first true V3 contract.
+
+---
+
+# IMPORTANT RULES
+
+Do NOT:
+
+* add functions
+* add JavaScript
+* add HTML
+* add runtime logic
+
+Hunts are PURE DATA.
+
+That philosophy is critical.
+
+---
+
+# WHAT THIS PROVES
+
+Once this file works,
+you’ve proven:
+
+```txt id="q0t8zj"
+content is separate from runtime
+```
+
+That’s one of the biggest architectural wins in V3.
+
+---
+
+# NEXT FILE AFTER THIS
+
+After you create and save:
+
+```txt id="fclvow"
+hunts/demo-hunt.json
+```
+
+the next file will be:
+
+```txt id="y2zk87"
+runtime/stateStore.js
+```
+
+That becomes the first real runtime system.
+
+---
+
+# QUICK CHECK BEFORE MOVING ON
+
+Make sure:
+
+* the filename is EXACTLY:
+  `demo-hunt.json`
+* it is inside:
+  `hunts/`
+* JSON formatting is valid
+* no trailing commas
+* no comments
+
+Once that’s done,
+we move to the state system.
