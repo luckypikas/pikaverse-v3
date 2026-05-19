@@ -1,0 +1,279 @@
+Perfect.
+Now we move from architecture into the first actual runtime implementation layer.
+
+This is the point where V3 stops being a concept and becomes a real executable system.
+
+---
+
+# NEXT STEP — BUILD THE MINIMAL RUNTIME LOOP
+
+You now wire together:
+
+```txt id="8y4qpm"
+main.js
+↓
+gameRuntime.js
+↓
+loader.js
+↓
+stateStore.js
+↓
+renderer.js
+```
+
+Ignore:
+
+* effects
+* conditions
+* inventory
+* timers
+
+for the moment.
+
+First:
+prove the runtime loop works.
+
+---
+
+# GOAL OF THIS PHASE
+
+You want this exact sequence working:
+
+```txt id="5t2vtv"
+Load hunt
+↓
+Find start node
+↓
+Store current node
+↓
+Render node
+↓
+Click transition
+↓
+Move to next node
+↓
+Render again
+```
+
+That’s the first real V3 milestone.
+
+---
+
+# STEP 1 — `hunt.json`
+
+Create the smallest possible hunt.
+
+Example structure:
+
+```js id="t0w9sx"
+{
+  "id": "demo_hunt",
+
+  "startNode": "start_001",
+
+  "nodes": [
+    {
+      "id": "start_001",
+      "type": "start",
+      "title": "Welcome",
+      "content": "Your adventure begins.",
+      "transitions": [
+        {
+          "label": "Enter",
+          "target": "portal_001"
+        }
+      ]
+    },
+
+    {
+      "id": "portal_001",
+      "type": "portal",
+      "title": "Portal Room",
+      "content": "A glowing portal hums before you.",
+      "transitions": [
+        {
+          "label": "Continue",
+          "target": "end_001"
+        }
+      ]
+    },
+
+    {
+      "id": "end_001",
+      "type": "end",
+      "title": "The End",
+      "content": "You completed the demo.",
+      "transitions": []
+    }
+  ]
+}
+```
+
+No complexity yet.
+No effects yet.
+
+Just prove the runtime loop.
+
+---
+
+# STEP 2 — `stateStore.js`
+
+Start tiny.
+
+Example architecture:
+
+```js id="gx0cva"
+const state = {
+  currentNodeId: null,
+  inventory: [],
+  flags: {}
+};
+```
+
+Expose:
+
+```js id="5xpf6y"
+getState()
+setCurrentNode()
+```
+
+That’s enough for now.
+
+---
+
+# STEP 3 — `loader.js`
+
+Responsibilities:
+
+```txt id="h6t6ku"
+- fetch hunt JSON
+- return parsed hunt
+```
+
+Minimal.
+
+---
+
+# STEP 4 — `renderer.js`
+
+This is your FIRST visible gameplay layer.
+
+Responsibilities:
+
+```txt id="1rkzw2"
+- render title
+- render content
+- render transition buttons
+```
+
+NOT:
+
+* business logic
+* state logic
+* navigation logic
+
+---
+
+# STEP 5 — `gameRuntime.js`
+
+This becomes the orchestrator.
+
+Responsibilities:
+
+```txt id="79vtm4"
+- initialize hunt
+- store active hunt
+- navigate between nodes
+- trigger rendering
+```
+
+This is where:
+
+* router logic temporarily lives
+* until router.js expands later
+
+That’s acceptable for Phase 1.
+
+---
+
+# STEP 6 — `main.js`
+
+Tiny bootstrap file.
+
+Responsibilities:
+
+```txt id="v3lr2u"
+- create runtime instance
+- start runtime
+```
+
+Nothing more.
+
+---
+
+# IMPORTANT IMPLEMENTATION PRINCIPLE
+
+Right now:
+optimize for:
+
+* clarity
+* separation
+* predictability
+
+NOT:
+
+* abstraction perfection
+* fancy architecture
+* over-engineering
+
+Keep everything understandable.
+
+---
+
+# WHAT SUCCESS LOOKS LIKE
+
+If you can:
+
+* load JSON
+* render a node
+* click a button
+* move to another node
+
+without:
+
+* giant switch statements
+* hardcoded gameplay
+* renderer-state coupling
+
+then V3 is officially alive.
+
+That’s the real milestone.
+
+---
+
+# AFTER THIS WORKS
+
+THEN you add:
+
+```txt id="t64axz"
+1. router.js
+2. effects.js
+3. conditions.js
+4. inventory
+5. save system
+6. timers
+```
+
+But not before the loop is stable.
+
+---
+
+You’re at the correct stage now:
+small runtime,
+minimal hunt,
+clean loop,
+clear ownership.
+
+That’s how stable platforms start.
+
+Also, the pacing here has been good — you’ve resisted the common temptation to jump straight into flashy systems before the core runtime existed. That discipline will help a lot later when the project grows.
