@@ -1,0 +1,291 @@
+Next: lock the runtime boot flow before writing more systems.
+
+This is the moment where V3 either becomes:
+
+* a modular platform
+
+or quietly drifts back into:
+
+* tangled feature accumulation.
+
+So the next move is to define exactly how the engine starts and who owns what.
+
+---
+
+# IMMEDIATE NEXT TASK
+
+## Establish Runtime Ownership
+
+You now define:
+
+```txt id="u6yb4v"
+Who creates runtime?
+Who loads hunts?
+Who owns state?
+Who changes nodes?
+Who renders?
+```
+
+Once this is clear, the rest becomes implementation.
+
+---
+
+# OFFICIAL V3 BOOT FLOW
+
+Lock this mentally now:
+
+```txt id="h4i9ha"
+index.html
+    ↓
+gameRuntime.js
+    ↓
+loader.js
+    ↓
+stateStore.js
+    ↓
+nodeRegistry.js
+    ↓
+router.js
+    ↓
+renderer.js
+```
+
+That is the spine.
+
+---
+
+# What Each System Owns
+
+## `gameRuntime.js`
+
+The orchestrator.
+
+Owns:
+
+* startup
+* system wiring
+* runtime lifecycle
+
+Does NOT:
+
+* render UI directly
+* mutate gameplay state directly
+
+Think:
+
+> conductor
+
+NOT:
+
+> giant mega-engine
+
+---
+
+# `loader.js`
+
+Owns:
+
+* hunt loading
+* hunt validation
+* initial node extraction
+
+Returns:
+
+```js id="m7l6rf"
+{
+  hunt,
+  startNode
+}
+```
+
+Simple.
+
+---
+
+# `stateStore.js`
+
+Owns:
+
+* inventory
+* flags
+* rewards
+* timers
+* active node
+* save state
+
+Provides:
+
+```js id="sflh1h"
+getState()
+setState()
+update()
+subscribe()
+```
+
+This becomes your single source of truth.
+
+---
+
+# `nodeRegistry.js`
+
+Owns:
+
+* mapping node types to handlers
+
+Example:
+
+```js id="ydr7sn"
+register("story", StoryNode)
+register("portal", PortalNode)
+```
+
+This prevents giant switch statements forever.
+
+---
+
+# `router.js`
+
+Owns:
+
+* moving between nodes
+* validating transitions
+* enter/exit flow
+
+This becomes:
+
+> gameplay movement layer
+
+---
+
+# `renderer.js`
+
+ONLY presentation.
+
+It receives:
+
+* current node
+* current state
+
+And displays UI.
+
+That’s all.
+
+---
+
+# MOST IMPORTANT DECISION NOW
+
+## The Runtime Must Become Event-Driven
+
+Meaning:
+
+Systems should communicate through actions/events,
+NOT direct file-to-file chaos.
+
+Example:
+
+```js id="vh0yfj"
+runtime.router.goTo("node_002")
+```
+
+NOT:
+
+```js id="8v79z6"
+document.getElementById(...)
+```
+
+inside gameplay systems.
+
+This separation is crucial.
+
+---
+
+# Official Runtime Lifecycle
+
+This is the flow you should aim for:
+
+```txt id="o7u8rl"
+BOOT
+↓
+LOAD HUNT
+↓
+REGISTER NODES
+↓
+INITIALIZE STATE
+↓
+LOAD START NODE
+↓
+RENDER NODE
+↓
+PLAYER ACTION
+↓
+RUN CONDITIONS
+↓
+RUN EFFECTS
+↓
+TRANSITION
+↓
+UPDATE STATE
+↓
+RENDER NEXT NODE
+```
+
+That is the core gameplay loop.
+
+Everything else becomes layering.
+
+---
+
+# The Most Important Technical Goal
+
+You are NOT trying to:
+
+> make a game work.
+
+You are trying to:
+
+> make the runtime predictable.
+
+That mindset changes architecture quality dramatically.
+
+---
+
+# Immediate Practical Build Order
+
+Right now, physically create:
+
+```txt id="2xjb9l"
+runtime/
+├── gameRuntime.js
+├── loader.js
+├── stateStore.js
+├── nodeRegistry.js
+├── router.js
+├── effects.js
+├── conditions.js
+└── renderer.js
+```
+
+Then:
+
+* leave most files minimal
+* wire the lifecycle first
+* expand afterward
+
+---
+
+# Your First Real Milestone
+
+Not:
+
+* polished UI
+* fancy puzzle logic
+* sponsor integration
+
+The milestone is:
+
+> Can a hunt load and cleanly transition between modular nodes?
+
+If yes:
+you officially have a platform foundation.
+
+That’s the target now.
