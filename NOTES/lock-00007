@@ -1,0 +1,266 @@
+Next, you build the first fully functional runtime pass.
+
+Not “prototype spaghetti.”
+Not temporary hacks.
+
+A clean vertical slice.
+
+---
+
+# YOUR NEXT OBJECTIVE
+
+Implement:
+
+```txt id="fcln47"
+load hunt
+↓
+render node
+↓
+transition between nodes
+↓
+update state
+↓
+re-render
+```
+
+using REAL separation.
+
+This is the first true V3 execution loop.
+
+---
+
+# THE NEXT FILES TO ACTUALLY IMPLEMENT
+
+In this order:
+
+```txt id="8hggxe"
+1. hunt.json
+2. stateStore.js
+3. loader.js
+4. renderer.js
+5. gameRuntime.js
+6. main.js
+```
+
+Do not build:
+
+* effects
+* conditions
+* creator dashboard
+* animations
+* fancy styling
+
+Yet.
+
+---
+
+# OFFICIAL PHASE-1 ARCHITECTURE
+
+## `hunt.json`
+
+Pure data.
+
+No functions.
+No runtime logic.
+No DOM knowledge.
+
+ONLY:
+
+* nodes
+* transitions
+* content
+
+That’s critical.
+
+---
+
+# `stateStore.js`
+
+This becomes your first real system.
+
+Start VERY small:
+
+```js id="7i8g9n"
+{
+  currentNodeId: null,
+  inventory: [],
+  flags: {}
+}
+```
+
+Expose only:
+
+```js id="mwr2o5"
+getState()
+setCurrentNode()
+```
+
+Nothing else yet.
+
+Avoid complexity early.
+
+---
+
+# `loader.js`
+
+Single responsibility:
+
+```txt id="yliv6m"
+load hunt data
+```
+
+That’s all.
+
+Do not let it become:
+
+* router
+* renderer
+* validator
+* gameplay system
+
+---
+
+# `renderer.js`
+
+This is your first player-layer file.
+
+It should:
+
+* receive node data
+* clear screen
+* render node
+* render transition buttons
+
+Nothing else.
+
+The renderer should NOT:
+
+* decide game logic
+* mutate state
+* evaluate conditions
+
+That separation matters enormously later.
+
+---
+
+# `gameRuntime.js`
+
+This becomes the orchestrator.
+
+It should own:
+
+```txt id="4t1jzn"
+- active hunt
+- current node
+- navigation flow
+- runtime startup
+```
+
+This file coordinates systems.
+
+It should NOT become:
+
+* giant god file
+* rendering file
+* DOM chaos layer
+
+Protect this file carefully.
+
+---
+
+# `main.js`
+
+Tiny bootstrap only.
+
+Example responsibility:
+
+```txt id="vqijw0"
+create runtime
+start runtime
+```
+
+Nothing more.
+
+---
+
+# IMPORTANT IMPLEMENTATION RULE
+
+Right now:
+you are building:
+
+> runtime predictability
+
+NOT:
+
+> gameplay complexity
+
+That mindset is everything.
+
+---
+
+# FIRST TRUE SUCCESS CONDITION
+
+You officially have a real platform foundation when this works:
+
+```txt id="w13q7q"
+Node A
+↓
+click transition
+↓
+state updates
+↓
+Node B renders
+↓
+refresh survives
+↓
+runtime remains clean
+```
+
+That’s the actual milestone.
+
+Not visuals.
+
+---
+
+# AFTER THAT
+
+THEN you add:
+
+```txt id="q7e91n"
+router.js
+effects.js
+conditions.js
+saveSystem.js
+inventory.js
+timers.js
+```
+
+But only after the loop is stable.
+
+---
+
+# IMPORTANT WARNING
+
+DO NOT:
+
+* hardcode node types into renderer
+* hardcode transitions into HTML
+* mutate DOM from multiple systems
+* let state exist in random files
+
+That’s how V2-style entropy begins.
+
+---
+
+# THE CORRECT MENTAL MODEL
+
+## Nodes are content.
+
+## Runtime is behavior.
+
+## Renderer is presentation.
+
+If you preserve those boundaries,
+V3 scales cleanly.
+
+That’s the target now.
