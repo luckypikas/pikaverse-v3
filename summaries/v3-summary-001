@@ -1,0 +1,162 @@
+Paste this into the new chat as the official V3 starting point:
+
+PIKAVERSE V3 — OFFICIAL FOUNDATION (LOCKED IN)
+
+Identity:
+Modular Interactive Adventure Platform, creator-first, not just a treasure hunt engine.
+
+Core Philosophy:
+Small core runtime + modular nodes + data-driven hunts.
+
+Architecture Philosophy:
+
+* runtime = systems
+* player = presentation
+* creator = authoring
+
+We are intentionally separating:
+
+* nodes
+* rewards
+* assets
+* sponsors
+* runtime systems
+
+Sponsors are a layer, not a node type.
+Link/external navigation is a core node type for future AR and real-world hunts.
+
+Systems already committed:
+
+* branching
+* timers
+* conditions
+* inventory
+* rewards
+* popups
+* overlays
+* external links
+* save/load state
+
+Node Strategy:
+We are defining the full standard node ecosystem now, but implementing nodes in phases.
+
+Official Standard Node Roadmap (V1 ecosystem):
+
+* start
+* story
+* portal
+* puzzle
+* wordPuzzle
+* trivia
+* riddle
+* timer
+* checkpoint
+* trap
+* gem
+* reward
+* deadEnd
+* doors
+* inventory
+* luck
+* upload
+* link
+* map
+* qr
+* end
+
+Global Systems:
+
+* global hunt timer is a runtime/hunt-level system
+* node timer is separate and node-level
+* rewards are universal systems, not tied to node types
+
+UI / Visual Direction:
+Dark cinematic cyberpunk aesthetic with premium glass-style overlays.
+Primary palette:
+
+* deep black-purple backgrounds
+* gold accents
+* violet highlights
+* restrained neon/glow
+* cinematic atmosphere over clutter
+
+Gameplay Layout:
+
+* team name = top left
+* node timer = top right
+* gameplay center
+* inventory/status = bottom left
+* audio controls = bottom right
+* debug panel = dev-mode only
+* static atmospheric PNG backgrounds remain part of the visual identity
+
+Folder Structure (LOCKED IN):
+
+pikaverse-v3/
+│
+├── .git
+├── LICENSE
+├── README.md
+│
+├── assets/
+├── creator/
+├── docs/
+├── hunts/
+├── nodes/
+├── player/
+├── rewards/
+├── runtime/
+├── sponsors/
+├── themes/
+└── tools/
+
+Folder Meanings:
+
+* runtime = systems layer
+* player = gameplay presentation layer
+* creator = creator dashboard/authoring layer
+
+We are intentionally NOT renaming:
+
+* /player → /engine
+* /themes → /ui
+
+because the current naming better reflects the intended architecture and mental model.
+
+Runtime Naming:
+Use:
+
+* gameRuntime.js
+
+Avoid:
+
+* giant mega-files from V2
+* oversized game.js architecture
+
+Hunts Philosophy:
+Hunts are DATA, not hardcoded gameplay.
+
+First Major Goal:
+Build one stable playable modular hunt:
+start → portal → puzzle → end
+
+with:
+
+* branching
+* inventory persistence
+* timer support
+* runtime transitions
+* modular node loading
+
+Creator Dashboard:
+Creator experience is a first-class system, not a future add-on.
+
+Next Step:
+Let’s lock this structure and define the first runtime pieces:
+
+* loader
+* renderer
+* transitions/router
+* state store
+* node registry
+* base node contracts
