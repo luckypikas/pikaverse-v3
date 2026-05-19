@@ -1,0 +1,162 @@
+Perfect.
+Now we build the first real runtime system.
+
+This file becomes:
+
+> the single source of truth for gameplay state.
+
+Everything later depends on this staying clean and predictable.
+
+---
+
+# FILE: `runtime/stateStore.js`
+
+Create this file and paste this EXACTLY:
+
+```js
+const state = {
+  currentNodeId: null,
+
+  inventory: [],
+
+  flags: {},
+
+  rewards: []
+};
+
+export function getState() {
+  return state;
+}
+
+export function setCurrentNode(nodeId) {
+  state.currentNodeId = nodeId;
+}
+
+export function addItem(item) {
+  state.inventory.push(item);
+}
+
+export function setFlag(key, value = true) {
+  state.flags[key] = value;
+}
+
+export function addReward(reward) {
+  state.rewards.push(reward);
+}
+```
+
+---
+
+# WHAT THIS FILE DOES
+
+This becomes the first centralized runtime state layer.
+
+Right now it owns:
+
+```txt
+- current node
+- inventory
+- flags
+- rewards
+```
+
+Later it will expand to:
+
+* timers
+* checkpoints
+* save/load persistence
+* analytics hooks
+* multiplayer sync
+* runtime snapshots
+
+But not yet.
+
+---
+
+# WHY THIS MATTERS
+
+This prevents:
+
+* random global variables
+* renderer-owned state
+* node-owned state
+* DOM-owned gameplay logic
+
+That separation is one of the most important V3 architectural upgrades.
+
+---
+
+# IMPORTANT RULE
+
+From this point forward:
+
+## Gameplay state should ONLY change through store functions.
+
+GOOD:
+
+```js
+setCurrentNode("portal_001");
+```
+
+BAD:
+
+```js
+state.currentNodeId = "portal_001";
+```
+
+Even though both technically work.
+
+The wrapper functions are what preserve runtime discipline later.
+
+---
+
+# IMPORTANT PHILOSOPHY
+
+Right now:
+we are optimizing for:
+
+```txt
+clarity
+predictability
+separation
+```
+
+NOT:
+
+* over-engineering
+* abstraction perfection
+* framework complexity
+
+Small clean systems first.
+
+---
+
+# WHAT THIS ENABLES NEXT
+
+Once this file exists:
+
+* runtime navigation becomes possible
+* rendering becomes possible
+* transitions can update state
+* save systems become possible later
+
+This is the first real V3 runtime backbone.
+
+---
+
+# NEXT FILE
+
+After this,
+we move to:
+
+```txt
+runtime/loader.js
+```
+
+That file will:
+
+* load hunt data
+* expose node access
+* officially begin the runtime execution loop
+
+Which is where V3 truly starts coming alive.
