@@ -1,0 +1,311 @@
+Yes — keep both `effects` and `transitions`.
+
+But:
+
+* simplify them
+* formalize them
+* separate their responsibilities clearly
+
+Right now, the danger is not that those systems exist.
+The danger is when they become vague overlapping “magic behavior.”
+
+So let’s define them correctly now.
+
+---
+
+# Why `transitions` MUST Exist
+
+Transitions answer ONE question only:
+
+> “Where does the player go next?”
+
+That’s it.
+
+Examples:
+
+* branching choices
+* portal navigation
+* success/failure routing
+* dead ends
+* conditional paths
+* external link exits
+* puzzle success routing
+
+Without transitions:
+
+* every node invents its own navigation logic
+* branching becomes inconsistent
+* routers become messy
+* creator tooling becomes harder
+
+So transitions are foundational.
+
+---
+
+# What Transitions SHOULD Look Like
+
+Simple.
+
+```js
+transitions: [
+  {
+    id: "choice_001",
+    label: "Open the door",
+    target: "node_002"
+  },
+  {
+    id: "choice_002",
+    label: "Run away",
+    target: "node_003"
+  }
+]
+```
+
+Later:
+you can add optional conditions.
+
+```js
+{
+  label: "Use Key",
+  target: "vault_room",
+  conditions: ["hasSilverKey"]
+}
+```
+
+But the responsibility remains:
+
+> navigation only.
+
+---
+
+# Why `effects` MUST Exist
+
+Effects answer a DIFFERENT question:
+
+> “What changes in the game state?”
+
+Examples:
+
+* add inventory item
+* remove inventory item
+* add reward
+* trigger popup
+* start timer
+* stop timer
+* set flag
+* increment score
+* unlock achievement
+* mark checkpoint
+
+Without effects:
+
+* every node renderer mutates state directly
+* systems become tightly coupled
+* creator tooling becomes impossible later
+* debugging becomes horrible
+
+Effects are what make the runtime modular.
+
+---
+
+# What Effects SHOULD Look Like
+
+Simple action objects.
+
+```js
+effects: [
+  {
+    type: "addItem",
+    item: "silver_key"
+  },
+  {
+    type: "setFlag",
+    key: "doorUnlocked",
+    value: true
+  }
+]
+```
+
+That’s clean.
+
+The runtime interprets effects.
+Nodes do NOT mutate global state directly.
+
+That separation is critical.
+
+---
+
+# MOST IMPORTANT RULE
+
+## Transitions ≠ Effects
+
+Never mix them.
+
+BAD:
+
+```js
+{
+  target: "node_002",
+  addItem: "key",
+  setFlag: true
+}
+```
+
+GOOD:
+
+```js
+effects: [
+  {
+    type: "addItem",
+    item: "key"
+  }
+],
+
+transitions: [
+  {
+    label: "Continue",
+    target: "node_002"
+  }
+]
+```
+
+This separation is what prevents runtime chaos later.
+
+---
+
+# The Correct V3 Node Contract
+
+I would officially lock this:
+
+```js
+{
+  id: "node_001",
+
+  type: "story",
+
+  title: "The Entrance",
+
+  content: "You enter the chamber...",
+
+  assets: {
+    background: "entrance.png",
+    audio: "ambient.mp3"
+  },
+
+  conditions: [],
+
+  effects: [],
+
+  transitions: [],
+
+  timer: null,
+
+  rewards: [],
+
+  metadata: {}
+}
+```
+
+This is scalable.
+This is creator-friendly.
+This is runtime-safe.
+
+---
+
+# What Each Property Owns
+
+## `conditions`
+
+Can this node or transition be accessed?
+
+## `effects`
+
+What changes in state?
+
+## `transitions`
+
+Where can player go?
+
+## `rewards`
+
+What permanent rewards are granted?
+
+## `timer`
+
+What time behavior exists?
+
+## `assets`
+
+Presentation layer only.
+
+---
+
+# This Is the Big Architectural Win
+
+Once you lock this:
+
+The runtime becomes:
+
+* predictable
+* inspectable
+* serializable
+* creator-friendly
+* AI-generatable later
+* multiplayer-compatible later
+
+And your nodes stop becoming “mini game engines.”
+
+That’s the key.
+
+---
+
+# Immediate Next Runtime Pieces (Official)
+
+You are now ready for:
+
+```txt
+runtime/
+├── gameRuntime.js
+├── loader.js
+├── stateStore.js
+├── nodeRegistry.js
+├── router.js
+├── transitions.js
+├── effects.js
+├── conditions.js
+└── saveSystem.js
+```
+
+This is already significantly healthier than V2.
+
+---
+
+# The Most Important Architectural Principle Going Forward
+
+## Nodes declare.
+
+## Runtime executes.
+
+NOT:
+
+> nodes controlling systems directly.
+
+That single philosophy prevents:
+
+* spaghetti gameplay logic
+* giant switch statements
+* god-files
+* renderer corruption
+* impossible creator tooling
+
+And it future-proofs:
+
+* creator dashboard
+* multiplayer
+* cloud sync
+* analytics
+* sponsor overlays
+* AR expansion
+* procedural generation
+
+This is the correct direction.
