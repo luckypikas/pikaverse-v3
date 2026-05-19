@@ -1,0 +1,307 @@
+Excellent.
+Now we stop theorizing and establish the actual V3 foundation.
+
+Your next move is NOT to build features.
+
+Your next move is to create the minimal runtime skeleton with clear ownership.
+
+---
+
+# CREATE THIS EXACT STRUCTURE
+
+```txt id="hj4rxt"
+pikaverse-v3/
+│
+├── runtime/
+│   ├── gameRuntime.js
+│   ├── loader.js
+│   ├── stateStore.js
+│   ├── nodeRegistry.js
+│   ├── router.js
+│   ├── effects.js
+│   ├── conditions.js
+│   └── renderer.js
+│
+├── nodes/
+│   ├── start/
+│   ├── portal/
+│   ├── puzzle/
+│   └── end/
+│
+├── hunts/
+│   └── demo-hunt/
+│       └── hunt.json
+│
+├── player/
+│   ├── index.html
+│   ├── main.js
+│   └── styles.css
+│
+└── assets/
+```
+
+That is now your official V3 bootstrap.
+
+---
+
+# PHASE 1 GOAL
+
+The ONLY goal:
+
+```txt id="0xj89p"
+Load hunt
+↓
+Start runtime
+↓
+Render node
+↓
+Transition to next node
+↓
+Persist state
+```
+
+Nothing else matters yet.
+
+---
+
+# NOW DEFINE THE CORE RESPONSIBILITIES
+
+These should NEVER drift.
+
+---
+
+# `gameRuntime.js`
+
+The orchestrator.
+
+Responsibilities:
+
+```txt id="hf2dwt"
+- initialize systems
+- load hunt
+- start game
+- expose runtime API
+```
+
+NOT:
+
+* rendering directly
+* gameplay logic directly
+* DOM manipulation
+
+---
+
+# `loader.js`
+
+Responsibilities:
+
+```txt id="bd7qqf"
+- load hunt JSON
+- validate hunt structure
+- return parsed hunt
+```
+
+---
+
+# `stateStore.js`
+
+Responsibilities:
+
+```txt id="z9vnl8"
+- inventory
+- flags
+- rewards
+- timers
+- current node
+- save state
+```
+
+This becomes:
+
+> the single source of truth
+
+---
+
+# `nodeRegistry.js`
+
+Responsibilities:
+
+```txt id="z6l73q"
+- register node types
+- resolve node handlers
+```
+
+This is what keeps V3 modular forever.
+
+---
+
+# `router.js`
+
+Responsibilities:
+
+```txt id="73gpxd"
+- move between nodes
+- validate transitions
+- trigger lifecycle flow
+```
+
+---
+
+# `effects.js`
+
+Responsibilities:
+
+```txt id="lcit3v"
+- interpret effects
+- mutate state through controlled actions
+```
+
+---
+
+# `conditions.js`
+
+Responsibilities:
+
+```txt id="bmw1bw"
+- validate requirements
+- gate transitions/nodes
+```
+
+---
+
+# `renderer.js`
+
+Responsibilities:
+
+```txt id="v7x5v6"
+- render current node
+- display transitions
+- update UI
+```
+
+Presentation ONLY.
+
+---
+
+# OFFICIAL MINIMAL NODE CONTRACT
+
+Lock this immediately:
+
+```js id="n1xx3u"
+{
+  id: "start_001",
+
+  type: "start",
+
+  title: "Welcome",
+
+  content: "Your adventure begins.",
+
+  assets: {},
+
+  conditions: [],
+
+  effects: [],
+
+  transitions: [],
+
+  rewards: [],
+
+  timer: null,
+
+  metadata: {}
+}
+```
+
+This contract is your foundation.
+
+Do not let random node formats emerge later.
+
+---
+
+# OFFICIAL MINIMAL DEMO FLOW
+
+Your first hunt should ONLY be:
+
+```txt id="r3j63o"
+start
+↓
+portal
+↓
+puzzle
+↓
+end
+```
+
+That’s enough to validate:
+
+* runtime
+* routing
+* rendering
+* transitions
+* effects
+* persistence
+
+---
+
+# MOST IMPORTANT RULE GOING FORWARD
+
+## Nodes DECLARE.
+
+## Runtime EXECUTES.
+
+Meaning:
+
+Nodes contain:
+
+* data
+* intent
+* configuration
+
+The runtime performs:
+
+* transitions
+* state mutation
+* rendering
+* validation
+
+That separation is the entire architecture win.
+
+---
+
+# DO NOT BUILD YET
+
+Avoid:
+
+* creator dashboard
+* animations
+* multiplayer
+* sponsor systems
+* advanced UI
+* visual node editors
+* procedural generation
+
+Until the runtime loop is stable.
+
+---
+
+# YOUR NEXT REAL CODING STEP
+
+Start with:
+
+```txt id="0l4brk"
+1. gameRuntime.js
+2. loader.js
+3. stateStore.js
+```
+
+Wire ONLY:
+
+* runtime startup
+* hunt loading
+* initial node rendering
+
+Once that works:
+you officially have a functioning V3 core.
+
+That’s the real beginning.
