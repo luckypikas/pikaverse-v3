@@ -1,0 +1,312 @@
+Next, we establish the runtime spine.
+
+Not visuals.
+Not creator tools.
+Not fancy nodes.
+
+The runtime spine.
+
+Because once this exists, everything else becomes additive instead of chaotic.
+
+---
+
+# OFFICIAL NEXT PHASE
+
+## Build the Core Runtime Skeleton
+
+In this exact order:
+
+```txt
+1. loader
+2. state store
+3. node registry
+4. router
+5. effects system
+6. conditions system
+7. renderer
+8. first playable hunt
+```
+
+That order minimizes rewrites.
+
+---
+
+# STEP 1 — `loader.js`
+
+This becomes the entry point for hunt data.
+
+Responsibilities:
+
+* load hunt JSON/data
+* validate basic structure
+* register nodes
+* initialize runtime
+* start first node
+
+NOT responsible for:
+
+* rendering
+* state mutation
+* navigation logic
+
+---
+
+## Minimal Responsibility
+
+```js id="qibdqo"
+loadHunt(huntData)
+```
+
+That’s it.
+
+---
+
+# STEP 2 — `stateStore.js`
+
+This is the heart of persistence.
+
+It owns:
+
+* inventory
+* flags
+* timers
+* checkpoints
+* rewards
+* active node
+* save data
+
+---
+
+## IMPORTANT
+
+Nodes NEVER directly mutate state.
+
+Instead:
+
+```js id="6zz7x7"
+runtime.effects.execute(...)
+```
+
+updates the store.
+
+That separation matters enormously later.
+
+---
+
+# STEP 3 — `nodeRegistry.js`
+
+This is your modularity layer.
+
+It maps:
+
+```js id="1jpn2d"
+type -> renderer/behavior
+```
+
+Example:
+
+```js id="ppocxl"
+{
+  story: StoryNode,
+  puzzle: PuzzleNode,
+  portal: PortalNode
+}
+```
+
+Without this:
+you eventually create giant switch statements.
+
+The registry prevents V2 collapse patterns.
+
+---
+
+# STEP 4 — `router.js`
+
+The router handles movement between nodes.
+
+Responsibilities:
+
+* resolve transitions
+* validate conditions
+* update current node
+* trigger enter/exit lifecycle
+
+NOT:
+
+* rendering
+* inventory logic
+* effects mutation
+
+---
+
+# STEP 5 — `effects.js`
+
+This interprets action objects.
+
+Example:
+
+```js id="jlwmrm"
+{
+  type: "addItem",
+  item: "silver_key"
+}
+```
+
+The effects system becomes your universal state mutation layer.
+
+That’s critical.
+
+---
+
+# STEP 6 — `conditions.js`
+
+Conditions become reusable validators.
+
+Examples:
+
+```js id="yv3s6n"
+hasItem
+hasFlag
+timerExpired
+scoreAbove
+visitedNode
+```
+
+This becomes:
+
+* creator-friendly
+* testable
+* reusable
+
+---
+
+# STEP 7 — `renderer.js`
+
+NOW you render.
+
+Not before.
+
+Because now:
+
+* navigation exists
+* state exists
+* conditions exist
+* effects exist
+
+The renderer becomes simple presentation.
+
+That’s healthy architecture.
+
+---
+
+# STEP 8 — FIRST PLAYABLE MODULAR HUNT
+
+ONLY NOW:
+
+```txt
+start → portal → puzzle → end
+```
+
+with:
+
+* inventory
+* transitions
+* save state
+* timer
+* modular node loading
+
+This becomes your V3 vertical slice.
+
+---
+
+# Recommended V3 Runtime Structure (LOCK THIS)
+
+```txt
+runtime/
+├── gameRuntime.js
+├── loader.js
+├── stateStore.js
+├── nodeRegistry.js
+├── router.js
+├── effects.js
+├── conditions.js
+├── transitions.js
+├── saveSystem.js
+└── validators.js
+```
+
+---
+
+# Recommended Node Structure
+
+Eventually:
+
+```txt
+nodes/
+├── start/
+│   ├── renderer.js
+│   ├── schema.js
+│   └── config.js
+│
+├── puzzle/
+├── portal/
+└── end/
+```
+
+This scales far better than:
+
+* giant node files
+* giant renderers
+* giant switch statements
+
+---
+
+# Your Immediate Goal
+
+Do NOT build:
+
+* fancy UI
+* animations
+* sponsor systems
+* advanced creator tools
+* multiplayer
+* overlays
+
+Yet.
+
+Your ONLY goal right now is:
+
+> Can the runtime cleanly load and execute modular hunts?
+
+That is the foundation.
+
+Once that works:
+everything else becomes layering.
+
+---
+
+# Immediate Tactical Recommendation
+
+Your next actual coding move should probably be:
+
+## Create:
+
+```txt
+runtime/
+├── gameRuntime.js
+├── loader.js
+├── stateStore.js
+└── nodeRegistry.js
+```
+
+Then establish:
+
+* runtime boot flow
+* hunt loading flow
+* node registration flow
+
+Before any renderer logic.
+
+That’s the cleanest path forward.
+
+By the way, the way you’re structuring this now is much more coherent than most indie engine projects at this stage. The separation between runtime, player, and creator layers is especially strong.
