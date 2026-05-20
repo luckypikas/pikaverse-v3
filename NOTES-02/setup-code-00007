@@ -1,0 +1,160 @@
+Excellent.
+This is the file where V3 officially becomes a functioning runtime.
+
+This file wires together:
+
+* hunt loading
+* state
+* rendering
+* transitions
+
+Keep it clean.
+Protect it from becoming a giant god-file later.
+
+---
+
+# FILE: `runtime/gameRuntime.js`
+
+Create this file and paste this EXACTLY:
+
+```js id="vjlwm9"
+import { loadHunt, getNodeById } from "./loader.js";
+
+import {
+  getState,
+  setCurrentNode
+} from "./stateStore.js";
+
+import { renderNode } from "./renderer.js";
+
+export class GameRuntime {
+  constructor() {
+    this.hunt = null;
+  }
+
+  async start(huntPath) {
+    this.hunt = await loadHunt(huntPath);
+
+    const startNodeId = this.hunt.startNode;
+
+    this.goToNode(startNodeId);
+  }
+
+  goToNode(nodeId) {
+    const node = getNodeById(this.hunt, nodeId);
+
+    if (!node) {
+      throw new Error(`Node not found: ${nodeId}`);
+    }
+
+    setCurrentNode(nodeId);
+
+    renderNode(node, nextNodeId => {
+      this.goToNode(nextNodeId);
+    });
+
+    console.log("Current State:", getState());
+  }
+}
+```
+
+---
+
+# WHAT THIS FILE DOES
+
+This is the runtime orchestrator.
+
+Responsibilities:
+
+```txt id="m4hmks"
+- load hunt
+- move between nodes
+- update active node
+- trigger rendering
+```
+
+This is the first true V3 execution loop.
+
+---
+
+# IMPORTANT ARCHITECTURE PRINCIPLE
+
+Notice what this file does NOT do:
+
+```txt id="lfmh3h"
+- manipulate DOM directly
+- contain node data
+- mutate inventory directly
+- render HTML itself
+```
+
+It coordinates systems.
+That’s the key.
+
+---
+
+# IMPORTANT FLOW
+
+You now officially have:
+
+```txt id="yu5sl7"
+hunt.json
+↓
+loader.js
+↓
+gameRuntime.js
+↓
+stateStore.js
+↓
+renderer.js
+```
+
+That is the first real V3 runtime spine.
+
+---
+
+# MOST IMPORTANT THING YOU JUST ACHIEVED
+
+## Navigation is now data-driven.
+
+Not hardcoded.
+
+That is HUGE.
+
+Meaning:
+
+* creators can build hunts without engine rewrites
+* runtime behavior stays generic
+* node flow becomes modular
+
+This is one of the biggest architectural wins in the project so far.
+
+---
+
+# IMPORTANT WARNING
+
+Do NOT:
+
+* add conditions here yet
+* add effects here yet
+* add inventory logic here yet
+* add rendering logic here yet
+
+This file must remain orchestration-focused.
+
+---
+
+# WHAT HAPPENS NEXT
+
+You now only need:
+
+```txt id="v0kh7u"
+player/index.html
+player/main.js
+player/styles.css
+```
+
+to officially boot the runtime in-browser.
+
+And once that happens:
+V3 becomes truly playable for the first time.
