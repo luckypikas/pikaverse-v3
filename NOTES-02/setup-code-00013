@@ -1,0 +1,308 @@
+Excellent.
+Now we build the system that truly unlocks modular gameplay:
+
+> `effects.js`
+
+This is one of the most important architectural systems in V3.
+
+Because from this point forward:
+nodes stop directly changing gameplay state.
+
+Instead:
+
+* nodes declare intent
+* effects execute behavior
+
+That separation is massive.
+
+---
+
+# WHY EFFECTS MATTER
+
+Without effects:
+
+Every system eventually mutates state directly:
+
+```txt id="q8y7sa"
+router modifies inventory
+renderer modifies flags
+nodes modify rewards
+timers modify state
+```
+
+That becomes chaos.
+
+Effects solve this by creating:
+
+> a centralized mutation pipeline.
+
+---
+
+# THE BIG V3 PRINCIPLE
+
+## Nodes DECLARE.
+
+## Effects EXECUTE.
+
+Example:
+
+Node says:
+
+```js id="uxmvpr"
+effects: [
+  {
+    type: "addItem",
+    item: "silver_key"
+  }
+]
+```
+
+Runtime says:
+
+```txt id="jnpn0m"
+okay,
+I know how to execute addItem
+```
+
+That separation is the foundation of:
+
+* modularity
+* creator tooling
+* analytics
+* debugging
+* multiplayer
+* AI-generated hunts later
+
+---
+
+# FILE: `runtime/effects.js`
+
+Create this file and paste this EXACTLY:
+
+```js id="yswqzd"
+import {
+  addItem,
+  setFlag,
+  addReward
+} from "./stateStore.js";
+
+export function runEffects(effects = []) {
+  effects.forEach(effect => {
+    switch (effect.type) {
+      case "addItem":
+        addItem(effect.item);
+        break;
+
+      case "setFlag":
+        setFlag(effect.key, effect.value);
+        break;
+
+      case "addReward":
+        addReward(effect.reward);
+        break;
+
+      default:
+        console.warn(
+          `Unknown effect type: ${effect.type}`
+        );
+    }
+  });
+}
+```
+
+---
+
+# WHAT THIS FILE DOES
+
+This becomes:
+
+> the universal runtime mutation layer.
+
+It centralizes:
+
+```txt id="shh2tr"
+inventory
+flags
+rewards
+future timers
+future checkpoints
+future popups
+future analytics
+```
+
+into ONE execution system.
+
+That is extremely important.
+
+---
+
+# WHY THIS IS BETTER
+
+Without effects:
+
+You eventually get:
+
+```txt id="rmh1m4"
+random state changes everywhere
+```
+
+With effects:
+
+You get:
+
+```txt id="3fr0jk"
+predictable mutation pipeline
+```
+
+Which is dramatically more scalable.
+
+---
+
+# IMPORTANT DESIGN PRINCIPLE
+
+Effects are:
+
+> declarative actions.
+
+NOT:
+
+* arbitrary code execution
+* custom node scripts
+* inline gameplay logic
+
+This keeps hunts:
+
+* serializable
+* safe
+* creator-friendly
+* cloud-friendly
+
+---
+
+# NOW UPDATE `demo-hunt.json`
+
+Add effects to the start node.
+
+Replace THIS:
+
+```json id="d17k76"
+"type": "start",
+```
+
+WITH:
+
+```json id="y6mjlwm"
+"type": "start",
+
+"effects": [
+  {
+    "type": "setFlag",
+    "key": "gameStarted",
+    "value": true
+  }
+],
+```
+
+---
+
+# NOW UPDATE `router.js`
+
+Import:
+
+```js id="1zw0zy"
+import { runEffects } from "./effects.js";
+```
+
+Then INSIDE:
+
+```js id="uyn3l4"
+goTo(nodeId)
+```
+
+AFTER:
+
+```js id="1kg5x8"
+setCurrentNode(nodeId);
+```
+
+ADD:
+
+```js id="r0o12u"
+runEffects(node.effects);
+```
+
+---
+
+# WHAT JUST HAPPENED
+
+Now:
+
+```txt id="drd6uk"
+node data
+↓
+declares effects
+↓
+router triggers effect system
+↓
+stateStore updates state
+```
+
+That is REAL modular runtime architecture.
+
+---
+
+# THIS IS A MAJOR ENGINE MOMENT
+
+Because now:
+
+* gameplay behavior is data-driven
+* nodes are becoming declarative
+* state mutation is centralized
+
+This is where V3 starts becoming a true platform.
+
+---
+
+# IMPORTANT WARNING
+
+Do NOT:
+
+* add custom JS to hunts
+* let nodes execute functions
+* let effects become arbitrary scripts
+
+That destroys:
+
+* security
+* serialization
+* creator tooling
+* stability
+
+Keep effects declarative.
+
+Always.
+
+---
+
+# AFTER TESTING
+
+Once you confirm:
+
+* runtime still works
+* effects execute
+* flags update
+
+the NEXT major step should be:
+
+```txt id="xv3l6f"
+conditions.js
+```
+
+Because then:
+nodes become:
+
+* gated
+* reactive
+* progression-aware
+
+Which is where true gameplay systems begin emerging.
