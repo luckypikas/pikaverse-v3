@@ -1,0 +1,162 @@
+Excellent.
+Now we build the first content-loading layer.
+
+This file is the bridge between:
+
+* hunt data
+* runtime execution
+
+And it’s important that it stays extremely clean.
+
+---
+
+# FILE: `runtime/loader.js`
+
+Create this file and paste this EXACTLY:
+
+```js id="j79c67"
+export async function loadHunt(path) {
+  const response = await fetch(path);
+
+  if (!response.ok) {
+    throw new Error(`Failed to load hunt: ${path}`);
+  }
+
+  const hunt = await response.json();
+
+  validateHunt(hunt);
+
+  return hunt;
+}
+
+function validateHunt(hunt) {
+  if (!hunt.startNode) {
+    throw new Error("Hunt is missing startNode");
+  }
+
+  if (!Array.isArray(hunt.nodes)) {
+    throw new Error("Hunt nodes must be an array");
+  }
+}
+
+export function getNodeById(hunt, nodeId) {
+  return hunt.nodes.find(node => node.id === nodeId);
+}
+```
+
+---
+
+# WHAT THIS FILE DOES
+
+This becomes the first runtime data-access layer.
+
+Responsibilities:
+
+```txt id="0k0vgt"
+- load hunt JSON
+- validate basic structure
+- expose node lookup
+```
+
+That’s all.
+
+---
+
+# IMPORTANT DESIGN RULE
+
+## Loader does NOT own gameplay logic.
+
+Meaning:
+
+* no rendering
+* no transitions
+* no state mutation
+* no DOM manipulation
+
+Only:
+
+> content loading + validation
+
+That separation is critical.
+
+---
+
+# WHY `getNodeById()` MATTERS
+
+This function becomes the first clean runtime accessor.
+
+Instead of:
+
+BAD:
+
+```js id="5zhc2m"
+hunt.nodes.find(...)
+```
+
+scattered everywhere,
+
+the runtime gets:
+
+* centralized access patterns
+* easier future optimization
+* cleaner architecture
+
+---
+
+# IMPORTANT PHILOSOPHY
+
+Notice what’s happening now:
+
+```txt id="yz6h1u"
+hunt.json
+↓
+loader.js
+↓
+runtime systems
+```
+
+Content is flowing INTO the runtime.
+
+The runtime is NOT embedded inside content.
+
+That’s the major architectural shift.
+
+---
+
+# CURRENT SYSTEM STATUS
+
+You now officially have:
+
+```txt id="2zk1yq"
+✔ hunt data
+✔ state system
+✔ content loader
+```
+
+Which means:
+V3 officially has:
+
+* modular content
+* centralized state
+* runtime-accessible nodes
+
+That’s real platform infrastructure now.
+
+---
+
+# NEXT FILE
+
+Next we build:
+
+```txt id="3p6r4n"
+runtime/renderer.js
+```
+
+This becomes:
+
+* the first visible player layer
+* the first gameplay UI system
+* the first node rendering pipeline
+
+And after THAT:
+we wire the entire runtime loop together.
