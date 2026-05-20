@@ -1,0 +1,371 @@
+Next, I would focus on building the systems that turn V3 from a “working runtime” into a “stable platform runtime.”
+
+Not flashy features yet.
+
+Structural leverage.
+
+Here’s the order that makes the most architectural sense from where you are now.
+
+---
+
+# PHASE 1 — Runtime Event System
+
+*(Highest leverage system right now)*
+
+Build this before inventory, timers, cinematics, or advanced UI.
+
+## Goal
+
+Allow systems to communicate without directly importing each other.
+
+Right now you probably have:
+
+* router calling renderer
+* effects touching state
+* runtime orchestrating flow
+
+That’s fine.
+
+But future systems will explode coupling unless you add an event layer now.
+
+---
+
+## Create
+
+```txt id="ys9gg2"
+runtime/
+  events.js
+```
+
+---
+
+## Example API
+
+```js id="0fjs2k"
+const listeners = {};
+
+export function on(event, callback) {
+  if (!listeners[event]) {
+    listeners[event] = [];
+  }
+
+  listeners[event].push(callback);
+}
+
+export function emit(event, payload = {}) {
+  if (!listeners[event]) return;
+
+  for (const callback of listeners[event]) {
+    callback(payload);
+  }
+}
+```
+
+---
+
+## Emit Events From:
+
+### router
+
+```js id="jl3f4y"
+emit("NODE_CHANGED", {
+  from,
+  to
+});
+```
+
+### effects
+
+```js id="qceh4w"
+emit("EFFECT_EXECUTED", {
+  effect
+});
+```
+
+### loader
+
+```js id="6j52bh"
+emit("HUNT_LOADED", {
+  huntId
+});
+```
+
+### saves
+
+```js id="pt2tvf"
+emit("GAME_SAVED");
+```
+
+---
+
+# Why This Matters So Much
+
+Because later:
+
+## audio system
+
+subscribes to events
+
+## overlays
+
+subscribe to events
+
+## analytics
+
+subscribe to events
+
+## achievements
+
+subscribe to events
+
+## cinematic transitions
+
+subscribe to events
+
+## multiplayer sync
+
+subscribes to events
+
+WITHOUT:
+
+* imports everywhere
+* circular dependencies
+* runtime spaghetti
+
+This system quietly future-proofs V3.
+
+---
+
+# PHASE 2 — Inventory System
+
+*(First “real gameplay” subsystem)*
+
+This is the first subsystem that touches:
+
+* effects
+* conditions
+* rewards
+* saves
+* UI
+
+Which makes it architecturally important.
+
+---
+
+## Build
+
+```txt id="w15y2j"
+runtime/
+  inventory/
+    inventorySystem.js
+    inventoryEffects.js
+    inventoryConditions.js
+```
+
+---
+
+## Runtime Ownership Model
+
+Do NOT let nodes own inventory.
+
+Inventory belongs to runtime state.
+
+Example:
+
+```js id="j6jlq7"
+state.inventory = {
+  keycard: true,
+  battery: 2,
+  relic: 1
+};
+```
+
+---
+
+## Then Add Effects
+
+```js id="8q0p25"
+{
+  type: "ADD_ITEM",
+  item: "keycard"
+}
+```
+
+---
+
+## And Conditions
+
+```js id="g4p5ud"
+{
+  type: "HAS_ITEM",
+  item: "keycard"
+}
+```
+
+---
+
+# PHASE 3 — Node Lifecycle Hooks
+
+This is where V3 starts feeling premium.
+
+---
+
+## Add Structured Lifecycle
+
+Instead of random execution:
+
+```js id="a1gtt6"
+onBeforeEnter()
+onEnter()
+onAfterRender()
+onExit()
+```
+
+NOT arbitrary JS hooks.
+
+Runtime-owned lifecycle phases.
+
+---
+
+# Why This Matters
+
+This enables:
+
+* timed reveals
+* audio triggers
+* cinematic fades
+* analytics
+* overlays
+* auto-saving
+* transition effects
+
+…without stuffing logic into renderer.
+
+---
+
+# PHASE 4 — Overlay System
+
+*(Huge UX multiplier)*
+
+This is one of the systems that will make V3 feel expensive.
+
+---
+
+## Create
+
+```txt id="y1e8k5"
+runtime/
+  overlays/
+    overlayManager.js
+```
+
+---
+
+## Overlays Become Runtime UI Events
+
+Examples:
+
+```js id="z8kwz0"
+showOverlay({
+  type: "reward",
+  title: "ACCESS GRANTED"
+});
+```
+
+Later:
+
+* holographic transmissions
+* cinematic chapter cards
+* faction reveals
+* glitch effects
+* timed warnings
+
+This is where your cyberpunk atmosphere becomes systemic.
+
+---
+
+# PHASE 5 — Transition System
+
+Right now transitions probably happen instantly.
+
+Later:
+
+* fades
+* camera drift
+* glitch cuts
+* distortion
+* async cinematic timing
+
+Need centralized ownership.
+
+NOT inside renderer.
+
+---
+
+# One Thing I Would NOT Build Yet
+
+## Full visual editor
+
+Not yet.
+
+You still need:
+
+* stable runtime contracts
+* finalized node lifecycle
+* mature effect system
+* inventory model
+* save architecture
+
+Otherwise:
+you’ll rebuild the editor repeatedly.
+
+---
+
+# One Thing I WOULD Start Defining Soon
+
+## Canonical Effect Registry
+
+Right now effects are probably open-ended.
+
+That becomes dangerous at scale.
+
+Eventually define:
+
+```txt id="n9k6b7"
+effects/
+  ADD_ITEM
+  REMOVE_ITEM
+  SET_FLAG
+  PLAY_AUDIO
+  START_TIMER
+  SHOW_OVERLAY
+  GIVE_REWARD
+```
+
+This becomes:
+
+* editor-safe
+* serializable
+* testable
+* deterministic
+
+Huge long-term win.
+
+---
+
+# Biggest Strategic Advice
+
+Do not optimize for:
+
+> “How fast can I add features?”
+
+Optimize for:
+
+> “How difficult is it to corrupt the architecture?”
+
+That mindset is why V3 already looks fundamentally healthier than most indie runtime projects.
+
+You are now in the stage where:
+small structural decisions matter more than visible features.
+
+That’s the real engine-building phase.
