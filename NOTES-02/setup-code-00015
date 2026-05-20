@@ -1,0 +1,494 @@
+Here’s the full current V3 drop-in set, with all updates applied.
+
+---
+
+### `hunts/demo-hunt.json`
+
+```json
+{
+  "id": "demo_hunt",
+
+  "title": "Pikaverse Demo Hunt",
+
+  "startNode": "start_001",
+
+  "nodes": [
+    {
+      "id": "start_001",
+
+      "type": "start",
+
+      "effects": [
+        {
+          "type": "setFlag",
+          "key": "gameStarted",
+          "value": true
+        }
+      ],
+
+      "title": "Welcome",
+
+      "content": "Your adventure begins in a dimly lit chamber.",
+
+      "transitions": [
+        {
+          "label": "Enter the portal",
+          "target": "portal_001"
+        }
+      ]
+    },
+
+    {
+      "id": "portal_001",
+
+      "type": "portal",
+
+      "title": "Portal Room",
+
+      "content": "A glowing portal hums with strange energy.",
+
+      "transitions": [
+        {
+          "label": "Continue forward",
+          "target": "puzzle_001"
+        }
+      ]
+    },
+
+    {
+      "id": "puzzle_001",
+
+      "type": "puzzle",
+
+      "conditions": [
+        {
+          "type": "hasFlag",
+          "key": "gameStarted"
+        }
+      ],
+
+      "title": "Ancient Puzzle",
+
+      "content": "Symbols on the wall begin shifting before your eyes.",
+
+      "transitions": [
+        {
+          "label": "Solve the puzzle",
+          "target": "end_001"
+        }
+      ]
+    },
+
+    {
+      "id": "end_001",
+
+      "type": "end",
+
+      "title": "The End",
+
+      "content": "You completed the first V3 runtime demo.",
+
+      "transitions": []
+    }
+  ]
+}
+```
+
+---
+
+### `runtime/stateStore.js`
+
+```js
+const state = {
+  currentNodeId: null,
+
+  inventory: [],
+
+  flags: {},
+
+  rewards: []
+};
+
+export function getState() {
+  return state;
+}
+
+export function setCurrentNode(nodeId) {
+  state.currentNodeId = nodeId;
+}
+
+export function addItem(item) {
+  state.inventory.push(item);
+}
+
+export function setFlag(key, value = true) {
+  state.flags[key] = value;
+}
+
+export function addReward(reward) {
+  state.rewards.push(reward);
+}
+```
+
+---
+
+### `runtime/loader.js`
+
+```js
+export async function loadHunt(path) {
+  const response = await fetch(path);
+
+  if (!response.ok) {
+    throw new Error(`Failed to load hunt: ${path}`);
+  }
+
+  const hunt = await response.json();
+
+  validateHunt(hunt);
+
+  return hunt;
+}
+
+function validateHunt(hunt) {
+  if (!hunt.startNode) {
+    throw new Error("Hunt is missing startNode");
+  }
+
+  if (!Array.isArray(hunt.nodes)) {
+    throw new Error("Hunt nodes must be an array");
+  }
+}
+
+export function getNodeById(hunt, nodeId) {
+  return hunt.nodes.find(node => node.id === nodeId);
+}
+```
+
+---
+
+### `runtime/renderer.js`
+
+```js
+export function renderNode(node, onTransition) {
+  const app = document.getElementById("app");
+
+  app.innerHTML = "";
+
+  const container = document.createElement("div");
+  container.className = "node-container";
+
+  const title = document.createElement("h1");
+  title.textContent = node.title;
+
+  const content = document.createElement("p");
+  content.textContent = node.content;
+
+  container.appendChild(title);
+  container.appendChild(content);
+
+  const transitions = document.createElement("div");
+  transitions.className = "transitions";
+
+  node.transitions.forEach(transition => {
+    const button = document.createElement("button");
+
+    button.textContent = transition.label;
+
+    button.addEventListener("click", () => {
+      onTransition(transition.target);
+    });
+
+    transitions.appendChild(button);
+  });
+
+  container.appendChild(transitions);
+
+  app.appendChild(container);
+}
+```
+
+---
+
+### `runtime/effects.js`
+
+```js
+import {
+  addItem,
+  setFlag,
+  addReward
+} from "./stateStore.js";
+
+export function runEffects(effects = []) {
+  effects.forEach(effect => {
+    switch (effect.type) {
+      case "addItem":
+        addItem(effect.item);
+        break;
+
+      case "setFlag":
+        setFlag(effect.key, effect.value);
+        break;
+
+      case "addReward":
+        addReward(effect.reward);
+        break;
+
+      default:
+        console.warn(
+          `Unknown effect type: ${effect.type}`
+        );
+    }
+  });
+}
+```
+
+---
+
+### `runtime/conditions.js`
+
+```js
+import { getState } from "./stateStore.js";
+
+export function checkConditions(
+  conditions = []
+) {
+  const state = getState();
+
+  return conditions.every(condition => {
+    switch (condition.type) {
+      case "hasItem":
+        return state.inventory.includes(
+          condition.item
+        );
+
+      case "hasFlag":
+        return state.flags[condition.key] === true;
+
+      default:
+        console.warn(
+          `Unknown condition type: ${condition.type}`
+        );
+
+        return false;
+    }
+  });
+}
+```
+
+---
+
+### `runtime/router.js`
+
+```js
+import { getNodeById } from "./loader.js";
+
+import { setCurrentNode } from "./stateStore.js";
+
+import { renderNode } from "./renderer.js";
+
+import { runEffects } from "./effects.js";
+
+import { checkConditions } from "./conditions.js";
+
+export class Router {
+  constructor(hunt) {
+    this.hunt = hunt;
+  }
+
+  goTo(nodeId) {
+    const node = getNodeById(this.hunt, nodeId);
+
+    if (!node) {
+      throw new Error(`Node not found: ${nodeId}`);
+    }
+
+    if (
+      node.conditions &&
+      !checkConditions(node.conditions)
+    ) {
+      console.warn(
+        `Conditions failed for node: ${nodeId}`
+      );
+
+      return;
+    }
+
+    setCurrentNode(nodeId);
+
+    runEffects(node.effects);
+
+    renderNode(node, nextNodeId => {
+      this.goTo(nextNodeId);
+    });
+  }
+}
+```
+
+---
+
+### `runtime/gameRuntime.js`
+
+```js
+import { loadHunt } from "./loader.js";
+
+import { Router } from "./router.js";
+
+export class GameRuntime {
+  constructor() {
+    this.hunt = null;
+
+    this.router = null;
+  }
+
+  async start(huntPath) {
+    this.hunt = await loadHunt(huntPath);
+
+    this.router = new Router(this.hunt);
+
+    this.router.goTo(this.hunt.startNode);
+  }
+}
+```
+
+---
+
+### `player/index.html`
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
+
+  <title>Pikaverse V3</title>
+
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+
+<body>
+  <div id="app"></div>
+
+  <script type="module" src="./main.js"></script>
+</body>
+</html>
+```
+
+---
+
+### `player/main.js`
+
+```js
+import { GameRuntime } from "../runtime/gameRuntime.js";
+
+const runtime = new GameRuntime();
+
+runtime.start("../hunts/demo-hunt.json");
+```
+
+---
+
+### `player/styles.css`
+
+```css
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+
+  min-height: 100vh;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  background:
+    radial-gradient(circle at top, #2a1840 0%, #090909 60%);
+
+  color: #f5f5f5;
+
+  font-family: Arial, sans-serif;
+}
+
+#app {
+  width: 100%;
+  max-width: 700px;
+
+  padding: 24px;
+}
+
+.node-container {
+  background: rgba(255, 255, 255, 0.08);
+
+  border: 1px solid rgba(255, 255, 255, 0.12);
+
+  border-radius: 20px;
+
+  padding: 32px;
+
+  backdrop-filter: blur(10px);
+
+  box-shadow:
+    0 0 30px rgba(0, 0, 0, 0.5);
+
+  text-align: center;
+}
+
+.node-container h1 {
+  margin-top: 0;
+
+  color: #f4c542;
+
+  font-size: 2rem;
+}
+
+.node-container p {
+  line-height: 1.6;
+
+  color: #dddddd;
+}
+
+.transitions {
+  margin-top: 32px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.transitions button {
+  padding: 14px 20px;
+
+  border: none;
+  border-radius: 12px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #6b3fd4,
+      #3d1d75
+    );
+
+  color: white;
+
+  font-size: 1rem;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.transitions button:hover {
+  transform: translateY(-2px);
+
+  opacity: 0.92;
+}
+```
