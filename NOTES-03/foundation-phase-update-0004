@@ -1,0 +1,207 @@
+Good. This is the correct point to slow down and stabilize intentionally.
+
+Right now, we are still inside:
+
+# PHASE 1 — Runtime Hardening
+
+And specifically, we are in:
+
+# Step 1 — Runtime Communication Normalization
+
+That means:
+
+* event flow
+* mutation normalization planning
+* registry standardization preparation
+
+NOT gameplay expansion yet.
+
+---
+
+# CURRENT PRIORITY
+
+The FIRST thing to finish is:
+
+```txt id="3azfls"
+events.js integration
+```
+
+Because:
+
+* it is lightweight
+* low-risk
+* foundational
+* future systems depend on it
+
+---
+
+# FILES TO UPDATE NOW
+
+## NEW FILE
+
+Create:
+
+```txt id="s5j18z"
+runtime/events.js
+```
+
+With:
+
+```js id="dr5w0q"
+const listeners = {};
+
+export function on(event, callback) {
+  if (!listeners[event]) {
+    listeners[event] = [];
+  }
+
+  listeners[event].push(callback);
+}
+
+export function emit(event, payload = {}) {
+  if (!listeners[event]) return;
+
+  for (const callback of listeners[event]) {
+    callback(payload);
+  }
+}
+```
+
+---
+
+# THEN UPDATE
+
+## runtime/router.js
+
+Add:
+
+```js id="7w7l5p"
+import { emit } from "./events.js";
+```
+
+Add to constructor:
+
+```js id="xoqewk"
+this.currentNodeId = null;
+```
+
+Then update navigation flow:
+
+FROM:
+
+```js id="i9tjlwm"
+setCurrentNode(nodeId);
+
+runEffects(node.effects);
+
+renderNode(node, nextNodeId => {
+  this.goTo(nextNodeId);
+});
+```
+
+TO:
+
+```js id="3wrycv"
+const previousNodeId = this.currentNodeId;
+
+setCurrentNode(nodeId);
+
+emit("NODE_CHANGED", {
+  from: previousNodeId,
+  to: nodeId
+});
+
+runEffects(node.effects);
+
+renderNode(node, nextNodeId => {
+  this.goTo(nextNodeId);
+});
+
+this.currentNodeId = nodeId;
+```
+
+---
+
+# WHY THIS IS SAFE
+
+This does NOT:
+
+* alter rendering
+* alter transitions
+* alter state
+* alter conditions
+* alter effects behavior
+
+It ONLY:
+
+```txt id="y7tfh2"
+normalizes runtime communication
+```
+
+That’s exactly the kind of stabilization we want right now.
+
+---
+
+# AFTER THAT
+
+We move to:
+
+# Step 2 — Mutation Normalization
+
+Which introduces:
+
+```txt id="jz3zlc"
+runtime/actions.js
+```
+
+But do NOT build it yet.
+
+Finish the event layer first.
+
+---
+
+# CURRENT ARCHITECTURAL STATUS
+
+After this update:
+
+## Router responsibilities:
+
+✔ navigation
+✔ node orchestration
+✔ runtime event emission
+
+## Renderer responsibilities:
+
+✔ presentation only
+
+## Effects responsibilities:
+
+✔ centralized mutation execution
+
+## Conditions responsibilities:
+
+✔ progression validation
+
+That keeps V3 extremely healthy architecturally.
+
+---
+
+# IMPORTANT
+
+Do NOT start adding:
+
+* inventory
+* overlays
+* timers
+* animations
+* advanced transitions
+
+until the event layer is stabilized first.
+
+Right now:
+
+```txt id="6vr3o0"
+stability > feature expansion
+```
+
+That is the correct engineering decision at this stage.
