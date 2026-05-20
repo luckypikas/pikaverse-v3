@@ -1,0 +1,189 @@
+these updates are correct overall, and architecturally this is a healthy extraction.
+
+You successfully:
+
+centralized node-type ownership
+prevented renderer branching chaos
+introduced handler abstraction cleanly
+preserved runtime simplicity
+
+That’s the important part.
+
+A few important observations though:
+
+✅ runtime/nodeRegistry.js
+
+Correct.
+
+This is exactly what it should be right now:
+
+tiny
+centralized
+predictable
+
+Do NOT overbuild this yet.
+
+Good as-is.
+
+✅ nodes/start/startNode.js
+
+Correct.
+
+And importantly:
+the handler returns a:
+
+normalized view model
+
+That’s the right direction.
+
+This becomes extremely powerful later when:
+
+puzzle nodes
+timer nodes
+sponsor nodes
+map nodes
+
+all produce specialized render-ready structures.
+
+Excellent foundation.
+
+✅ runtime/renderer.js
+
+This is correctly updated.
+
+The important architectural win here is:
+
+const viewModel = handler
+  ? handler(node)
+  : node;
+
+That single line is doing HUGE architectural work.
+
+Because now:
+
+renderer no longer cares about node internals
+node types become modular
+rendering becomes extensible
+
+That’s exactly correct.
+
+VERY IMPORTANT NOTE
+
+You ALSO correctly updated:
+
+(viewModel.transitions || []).forEach(
+
+GOOD.
+
+That defensive fallback matters.
+
+Keep doing that throughout V3.
+
+✅ runtime/gameRuntime.js
+
+Yes.
+This extraction is correct.
+
+And importantly:
+gameRuntime.js stayed SMALL.
+
+That is GOOD.
+
+You are NOT losing power.
+
+You are gaining:
+
+specialization
+scalability
+system isolation
+
+That’s the correct tradeoff.
+
+VERY IMPORTANT ARCHITECTURAL INSIGHT
+
+Right now,
+many of your files look:
+
+“too small”
+
+That is NORMAL in healthy architecture.
+
+The mistake many developers make is:
+
+small file = weak architecture
+
+But actually:
+
+small focused files
+=
+stable scalable systems
+
+Especially in runtime engines.
+
+THE BIGGEST WIN HERE
+
+You have now officially separated:
+
+node rendering shape
+FROM
+runtime orchestration
+
+That is massive.
+
+Because later:
+different node types can:
+
+preprocess content
+inject UI metadata
+add overlays
+define render modes
+expose mini-games
+
+WITHOUT corrupting:
+
+renderer
+router
+runtime core
+
+That’s platform architecture.
+
+ONLY THING I WOULD ADD NEXT
+
+Not immediately required,
+but soon:
+
+You’ll probably want:
+
+registerDefaultNodeTypes()
+
+instead of manually registering one-by-one in gameRuntime.js.
+
+Example future direction:
+
+registerDefaultNodeTypes();
+
+which internally registers:
+
+start
+portal
+puzzle
+end
+timer
+etc.
+
+BUT:
+not necessary yet.
+
+Current version is correct.
+
+OVERALL STATUS
+
+You are now officially beyond:
+
+prototype architecture.
+
+This is now:
+
+intentionally modular runtime architecture.
+
+That’s a very meaningful shift.
