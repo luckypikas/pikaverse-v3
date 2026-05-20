@@ -1,0 +1,126 @@
+Perfect.
+Now we create the browser entry point.
+
+This file boots the entire runtime.
+
+Once this works,
+V3 officially becomes playable.
+
+---
+
+# FILE: `player/index.html`
+
+Create this file and paste this EXACTLY:
+
+```html id="bd8f8s"
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
+
+  <title>Pikaverse V3</title>
+
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+
+<body>
+  <div id="app"></div>
+
+  <script type="module" src="./main.js"></script>
+</body>
+</html>
+```
+
+---
+
+# WHAT THIS FILE DOES
+
+This is the runtime mount point.
+
+Responsibilities:
+
+```txt id="2j9n4u"
+- load styles
+- provide app container
+- boot main.js
+```
+
+Nothing more.
+
+---
+
+# IMPORTANT RULE
+
+Keep `index.html` minimal.
+
+Do NOT:
+
+* hardcode gameplay UI here
+* add hunt content here
+* add giant layout systems here
+
+The runtime should own rendering.
+
+---
+
+# WHY `type="module"` MATTERS
+
+This enables:
+
+```txt id="9ql1l5"
+import/export architecture
+```
+
+Without bundlers.
+
+Which is perfect for early V3 development.
+
+---
+
+# IMPORTANT ARCHITECTURE WIN
+
+Notice what now exists:
+
+```txt id="3t9l1z"
+browser
+↓
+main.js
+↓
+runtime
+↓
+hunt data
+↓
+renderer
+```
+
+That is a real platform execution flow now.
+
+---
+
+# NEXT FILE
+
+Next:
+
+```txt id="ywk6f8"
+player/main.js
+```
+
+This file will:
+
+* create runtime instance
+* start the hunt
+* officially boot V3
+
+And after THAT:
+we’ll add the first styling layer with:
+
+* dark cinematic layout
+* glass UI
+* cyberpunk atmosphere
+
+without polluting runtime logic.
