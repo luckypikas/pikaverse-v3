@@ -1,0 +1,132 @@
+i'm ready for the next update, but double-check this updated router.js file first to make sure the code has been updated properly -> 
+
+> **PHASE 1 — Runtime Hardening → Step 1: Event Integration**
+
+So here is your **full, drop‑in, updated `router.js`**, containing *only* the changes appropriate for this phase:
+
+- event system integration  
+- safe previous/next node tracking  
+- no gameplay expansion  
+- no mutation redesign  
+- no lifecycle hooks  
+- no inventory  
+- no transitions  
+- no overlays  
+
+Just the **correct hardening‑phase update**.
+
+---
+
+# ✅ **UPDATED `runtime/router.js` (FULL DROP‑IN FILE)**
+
+```js
+import { getNodeById } from "./loader.js";
+import { setCurrentNode } from "./stateStore.js";
+import { renderNode } from "./renderer.js";
+import { runEffects } from "./effects.js";
+import { checkConditions } from "./conditions.js";
+import { emit } from "./events.js";
+
+export class Router {
+  constructor(hunt) {
+    this.hunt = hunt;
+
+    // Track previous node for event emission
+    this.currentNodeId = null;
+  }
+
+  goTo(nodeId) {
+    const node = getNodeById(this.hunt, nodeId);
+
+    if (!node) {
+      throw new Error(`Node not found: ${nodeId}`);
+    }
+
+    // Conditions check
+    if (node.conditions && !checkConditions(node.conditions)) {
+      console.warn(`Conditions failed for node: ${nodeId}`);
+
+      emit("NODE_BLOCKED", {
+        attempted: nodeId,
+        from: this.currentNodeId
+      });
+
+      return;
+    }
+
+    const previousNodeId = this.currentNodeId;
+
+    // Update state
+    setCurrentNode(nodeId);
+
+    // Emit navigation event
+    emit("NODE_CHANGED", {
+      from: previousNodeId,
+      to: nodeId
+    });
+
+    // Execute effects
+    runEffects(node.effects);
+
+    // Render node
+    renderNode(node, nextNodeId => {
+      this.goTo(nextNodeId);
+    });
+
+    // Update router's internal pointer
+    this.currentNodeId = nodeId;
+  }
+}
+```
+
+---
+
+# 🧠 **WHY THIS IS EXACTLY CORRECT FOR THIS PHASE**
+
+This update:
+
+### ✔ Adds event emission  
+- `NODE_CHANGED`  
+- `NODE_BLOCKED`  
+
+### ✔ Tracks previous node cleanly  
+Needed for analytics, overlays, transitions later.
+
+### ✔ Does NOT change runtime behavior  
+No new features.  
+No new systems.  
+No new gameplay.  
+No new UI.
+
+### ✔ Does NOT break the architecture  
+Router still owns navigation.  
+Renderer still owns presentation.  
+Effects still own mutation.  
+Conditions still own validation.  
+StateStore still owns state.  
+SaveSystem still owns persistence.
+
+### ✔ Prepares the runtime for Phase 2  
+Inventory, overlays, timers, lifecycle hooks — all will subscribe to events instead of creating coupling.
+
+---
+
+# 🚀 **READY FOR NEXT STEP**
+
+Whenever you say:
+
+**“Generate events.js”**  
+or  
+**“Generate the next hardening files”**
+
+I’ll produce:
+
+- `events.js`
+- `actions.js`
+- `effectRegistry.js`
+- `conditionRegistry.js`
+- `actionRegistry.js`
+
+All clean, flat, drop‑in, and aligned with the stabilized architecture.
+
+Just give the word.
