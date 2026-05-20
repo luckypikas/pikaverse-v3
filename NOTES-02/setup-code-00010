@@ -1,0 +1,138 @@
+Excellent.
+This is the smallest file so far,
+but it officially boots the entire V3 runtime.
+
+Once this works,
+you will have:
+
+> a real playable modular hunt engine running in-browser.
+
+---
+
+# FILE: `player/main.js`
+
+Create this file and paste this EXACTLY:
+
+```js id="om17d7"
+import { GameRuntime } from "../runtime/gameRuntime.js";
+
+const runtime = new GameRuntime();
+
+runtime.start("../hunts/demo-hunt.json");
+```
+
+---
+
+# WHAT THIS FILE DOES
+
+This is the bootstrap layer.
+
+Responsibilities:
+
+```txt id="c74ibk"
+- create runtime instance
+- start runtime
+- load hunt
+```
+
+That’s it.
+
+---
+
+# IMPORTANT ARCHITECTURE RULE
+
+`main.js` should remain tiny.
+
+Do NOT:
+
+* put gameplay logic here
+* put rendering logic here
+* put state logic here
+* put transitions here
+
+This file should ONLY:
+
+> start the application.
+
+---
+
+# WHAT NOW EXISTS
+
+You officially have:
+
+```txt id="0u7ud6"
+✔ hunt data
+✔ state system
+✔ loader system
+✔ renderer system
+✔ runtime orchestrator
+✔ browser bootstrap
+```
+
+This is now a legitimate runtime architecture.
+
+---
+
+# THE EXECUTION FLOW NOW
+
+When the browser loads:
+
+```txt id="wmndy0"
+index.html
+↓
+main.js
+↓
+GameRuntime
+↓
+loader.js
+↓
+hunt.json
+↓
+stateStore.js
+↓
+renderer.js
+↓
+DOM
+```
+
+That is a clean execution spine.
+
+---
+
+# MOST IMPORTANT THING
+
+At this point:
+your hunt is already:
+
+* modular
+* data-driven
+* runtime-controlled
+
+WITHOUT:
+
+* giant switch statements
+* hardcoded gameplay
+* node-specific engine hacks
+
+That’s a major milestone.
+
+---
+
+# NEXT FILE
+
+Now we add:
+
+```txt id="hh92jl"
+player/styles.css
+```
+
+This becomes:
+
+* the first visual identity layer
+* cinematic dark UI
+* glass-panel presentation
+* atmospheric V3 styling
+
+WITHOUT contaminating runtime systems.
+
+That separation matters.
