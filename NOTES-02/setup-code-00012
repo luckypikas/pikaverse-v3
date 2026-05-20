@@ -1,0 +1,199 @@
+Excellent.
+This is the moment where V3 officially transitions from:
+
+“rendering demo nodes”
+
+into:
+
+“becoming a real modular runtime.”
+
+And the next system is one of the most important architectural protections in the entire engine.
+
+NEXT STEP — router.js
+
+Right now:
+
+gameRuntime.js
+
+still directly handles navigation.
+
+That’s acceptable for bootstrap phase,
+BUT:
+if we leave it there,
+gameRuntime.js eventually becomes another V2 mega-file.
+
+So now we extract navigation responsibility.
+
+WHY THE ROUTER MATTERS
+
+The router becomes the dedicated gameplay movement system.
+
+It will eventually own:
+
+node transitions
+conditions
+blocked paths
+redirects
+lifecycle hooks
+animated transitions
+future multiplayer sync
+
+Without a router:
+navigation logic spreads everywhere.
+
+That’s how runtime entropy begins.
+
+NEW RESPONSIBILITY MODEL
+gameRuntime.js
+
+Owns:
+
+system orchestration
+router.js
+
+Owns:
+
+movement between nodes
+
+That separation is critical.
+
+FILE: runtime/router.js
+
+Create this file and paste this EXACTLY:
+
+import { getNodeById } from "./loader.js";
+
+import { setCurrentNode } from "./stateStore.js";
+
+import { renderNode } from "./renderer.js";
+
+export class Router {
+  constructor(hunt) {
+    this.hunt = hunt;
+  }
+
+  goTo(nodeId) {
+    const node = getNodeById(this.hunt, nodeId);
+
+    if (!node) {
+      throw new Error(`Node not found: ${nodeId}`);
+    }
+
+    setCurrentNode(nodeId);
+
+    renderNode(node, nextNodeId => {
+      this.goTo(nextNodeId);
+    });
+  }
+}
+WHAT THIS FILE DOES
+
+This extracts:
+
+gameplay navigation
+
+from:
+
+runtime orchestration
+
+That is a MASSIVE architecture improvement.
+
+IMPORTANT DESIGN PRINCIPLE
+
+The router now owns:
+
+- node lookup
+- active node changes
+- transition flow
+- recursive navigation
+
+This becomes the central movement system later.
+
+NOW UPDATE gameRuntime.js
+
+Replace the ENTIRE contents with this:
+
+import { loadHunt } from "./loader.js";
+
+import { Router } from "./router.js";
+
+export class GameRuntime {
+  constructor() {
+    this.hunt = null;
+
+    this.router = null;
+  }
+
+  async start(huntPath) {
+    this.hunt = await loadHunt(huntPath);
+
+    this.router = new Router(this.hunt);
+
+    this.router.goTo(this.hunt.startNode);
+  }
+}
+WHAT JUST HAPPENED
+
+This is the FIRST true V3 extraction.
+
+You just separated:
+
+runtime orchestration
+FROM
+gameplay navigation
+
+That is exactly how scalable engines evolve.
+
+WHY THIS IS IMPORTANT
+
+Now:
+future systems can plug into the router cleanly.
+
+Examples:
+
+conditions
+effects
+animations
+history
+backtracking
+multiplayer sync
+analytics
+save checkpoints
+
+WITHOUT corrupting runtime startup logic.
+
+CURRENT V3 STATUS
+
+You officially now have:
+
+✔ hunt system
+✔ state system
+✔ loader system
+✔ renderer system
+✔ runtime orchestrator
+✔ router system
+✔ browser runtime
+✔ visual identity layer
+
+This is already a legitimate platform architecture.
+
+NEXT STEP AFTER TESTING
+
+Once you confirm this still works,
+the next major system should be:
+
+effects.js
+
+Because effects become:
+
+the universal runtime mutation layer.
+
+And THAT is where:
+
+inventory
+rewards
+flags
+timers
+popups
+
+all become modular.
