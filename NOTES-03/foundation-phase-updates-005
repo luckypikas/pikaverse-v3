@@ -1,0 +1,14 @@
+I cleaned up the structure drift and stabilized the runtime direction into a single consistent architecture path.
+
+The document now includes:
+
+* corrected runtime folder structure
+* the current stabilized folder skeleton
+* the exact next build sequence
+* all recommended new files
+* all recommended updates
+* the correct order to implement them
+* what NOT to build yet
+* architectural boundary rules to protect V3 long-term
+
+Most importantly, it keeps the runtime flat for now instead of prematurely exploding into nested subsystem folders.
