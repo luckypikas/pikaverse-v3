@@ -1,0 +1,390 @@
+The best sequence now is the one that increases **architectural stability first**, while unlocking the maximum number of future systems with the fewest rewrites.
+
+Right now, V3 is in the most dangerous stage of engine development:
+
+> the runtime works well enough that feature temptation becomes stronger than structural discipline.
+
+So the best path is:
+
+---
+
+# THE CORRECT V3 BUILD SEQUENCE
+
+## PHASE 1 — Infrastructure Hardening
+
+*(Protect the architecture before expanding features)*
+
+This phase is about preventing future collapse.
+
+---
+
+## STEP 1 — Runtime Event Bus
+
+### Build first.
+
+```txt id="6nq2pb"
+runtime/events.js
+```
+
+This becomes the communication backbone for:
+
+* audio
+* overlays
+* analytics
+* transitions
+* achievements
+* multiplayer
+* AI systems
+* cinematics
+
+Without this:
+future systems start directly importing each other.
+
+That’s how runtimes become tangled.
+
+---
+
+## STEP 2 — Runtime Action Dispatch Layer
+
+*(Very important before scale)*
+
+Right now effects probably mutate state directly.
+
+Eventually move toward:
+
+```js id="jlwmz9"
+dispatch({
+  type: "ADD_ITEM",
+  payload
+});
+```
+
+Instead of:
+
+```js id="e8h81k"
+state.inventory.push(...)
+```
+
+Why?
+
+Because dispatch systems give you:
+
+* validation
+* logging
+* replayability
+* multiplayer sync
+* undo/redo
+* deterministic saves
+* analytics
+* debugging
+
+This is one of the biggest long-term upgrades you can make.
+
+Even lightweight dispatching changes everything.
+
+---
+
+## STEP 3 — Canonical Runtime Registries
+
+Create:
+
+```txt id="h3l9n5"
+runtime/
+  registries/
+```
+
+Then:
+
+* node registry
+* effect registry
+* condition registry
+* overlay registry
+
+Why this matters:
+
+Eventually the editor needs introspection.
+
+Registries become:
+
+* editor-safe
+* self-documenting
+* serializable
+* discoverable
+
+This is foundational platform architecture.
+
+---
+
+# PHASE 2 — Gameplay Foundation Systems
+
+*(Now build real mechanics)*
+
+Only AFTER the runtime foundation stabilizes.
+
+---
+
+## STEP 4 — Inventory System
+
+This is your first true gameplay subsystem.
+
+Build:
+
+```txt id="25rjmf"
+runtime/systems/inventory/
+```
+
+Include:
+
+* inventory state
+* inventory effects
+* inventory conditions
+* persistence integration
+
+Do NOT build inventory UI first.
+
+Build runtime ownership first.
+
+---
+
+## STEP 5 — Reward Pipeline
+
+Right now rewards are probably conceptual.
+
+Formalize them.
+
+Example:
+
+```js id="z10v6r"
+{
+  type: "XP",
+  amount: 100
+}
+```
+
+or
+
+```js id="e26d9r"
+{
+  type: "ITEM",
+  item: "keycard"
+}
+```
+
+Then create:
+
+```txt id="wqlf4m"
+runtime/systems/rewards/
+```
+
+This later powers:
+
+* progression
+* achievements
+* economy
+* shops
+* unlocks
+* creator monetization
+
+Huge future leverage.
+
+---
+
+## STEP 6 — Timer System
+
+Timers MUST remain centralized.
+
+Never:
+
+* local component timers
+* node-owned timers
+* random setTimeout chaos
+
+Instead:
+
+```txt id="3h0h3h"
+runtime/systems/timers/
+```
+
+This eventually supports:
+
+* async hunts
+* live events
+* cooldowns
+* multiplayer sync
+* expiring objectives
+* real-world timed gameplay
+
+---
+
+# PHASE 3 — Experience Layer
+
+*(Now the engine starts feeling premium)*
+
+Only after systems are stable.
+
+---
+
+## STEP 7 — Overlay Manager
+
+This is where your cinematic identity emerges.
+
+Build:
+
+```txt id="m6fvtw"
+runtime/systems/overlays/
+```
+
+Examples:
+
+* chapter cards
+* transmissions
+* item reveals
+* warnings
+* achievements
+* glitch interruptions
+* faction encounters
+
+This becomes the emotional layer of the runtime.
+
+---
+
+## STEP 8 — Transition Pipeline
+
+Not just animations.
+
+A transition orchestration system.
+
+Eventually:
+
+* preload assets
+* synchronize audio
+* orchestrate fades
+* delay rendering
+* cinematic sequencing
+
+This system becomes very important later.
+
+---
+
+# PHASE 4 — Platform Stabilization
+
+*(Before editor expansion)*
+
+---
+
+## STEP 9 — Asset Manager
+
+Critical before scale.
+
+Create:
+
+```txt id="ztk5g6"
+runtime/assets/
+```
+
+This later handles:
+
+* image caching
+* audio management
+* preload pipelines
+* memory cleanup
+* lazy loading
+
+Do this BEFORE giant content scaling.
+
+---
+
+## STEP 10 — Save Slot Architecture
+
+Current persistence is enough for now.
+
+But eventually:
+
+```txt id="pvpytd"
+profiles/
+save slots/
+cloud sync/
+migration versioning/
+```
+
+This becomes critical once creators publish content.
+
+---
+
+# PHASE 5 — Creator Platform Expansion
+
+*(ONLY after runtime stability)*
+
+Now:
+
+* visual editor
+* creator tooling
+* validation
+* hunt publishing
+* analytics dashboards
+* node graph editor
+
+become much safer to build.
+
+---
+
+# MOST IMPORTANT STRATEGIC DECISION
+
+You are no longer building:
+
+> “a game engine”
+
+You are building:
+
+> “a deterministic runtime platform”
+
+That changes priorities dramatically.
+
+Your biggest wins now come from:
+
+* boundaries
+* ownership
+* orchestration
+* registries
+* contracts
+* serialization
+* determinism
+
+NOT:
+
+* flashy features
+* content quantity
+* visual complexity
+
+---
+
+# The Single Best Immediate Sequence
+
+If I were directing V3 personally:
+
+## RIGHT NOW:
+
+1. Event bus
+2. Dispatch/action layer
+3. Registry standardization
+
+THEN:
+4. Inventory system
+5. Reward system
+6. Timer system
+
+THEN:
+7. Overlay system
+8. Transition orchestration
+
+THEN:
+9. Asset manager
+10. Save slot architecture
+
+THEN:
+11. Editor expansion
+
+That order minimizes rewrites while maximizing long-term scalability.
+
+And importantly:
+it keeps V3 aligned with the architecture philosophy you already established instead of drifting back toward V2 patterns.
