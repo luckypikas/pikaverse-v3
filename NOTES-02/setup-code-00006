@@ -1,0 +1,170 @@
+Perfect.
+Now we build the first visible gameplay layer.
+
+This is the file that proves:
+
+> the runtime can actually present modular hunt data.
+
+Keep this file simple.
+Do NOT over-engineer it yet.
+
+---
+
+# FILE: `runtime/renderer.js`
+
+Create this file and paste this EXACTLY:
+
+```js id="61rsk0"
+export function renderNode(node, onTransition) {
+  const app = document.getElementById("app");
+
+  app.innerHTML = "";
+
+  const container = document.createElement("div");
+  container.className = "node-container";
+
+  const title = document.createElement("h1");
+  title.textContent = node.title;
+
+  const content = document.createElement("p");
+  content.textContent = node.content;
+
+  container.appendChild(title);
+  container.appendChild(content);
+
+  const transitions = document.createElement("div");
+  transitions.className = "transitions";
+
+  node.transitions.forEach(transition => {
+    const button = document.createElement("button");
+
+    button.textContent = transition.label;
+
+    button.addEventListener("click", () => {
+      onTransition(transition.target);
+    });
+
+    transitions.appendChild(button);
+  });
+
+  container.appendChild(transitions);
+
+  app.appendChild(container);
+}
+```
+
+---
+
+# WHAT THIS FILE DOES
+
+This is your first true player-layer system.
+
+Responsibilities:
+
+```txt id="s0h2q0"
+- display node title
+- display node content
+- display transition buttons
+- trigger navigation callbacks
+```
+
+That’s it.
+
+---
+
+# IMPORTANT ARCHITECTURE RULE
+
+## Renderer does NOT own gameplay.
+
+Meaning:
+
+* no state mutation
+* no routing logic
+* no hunt loading
+* no conditions
+* no effects
+
+ONLY:
+
+> presentation
+
+This separation is extremely important.
+
+---
+
+# WHY `onTransition()` MATTERS
+
+Notice this:
+
+```js id="b7uqz8"
+onTransition(transition.target);
+```
+
+The renderer is NOT deciding:
+
+* where to go
+* whether transition is valid
+* how state changes
+
+It simply emits intent.
+
+That’s clean architecture.
+
+---
+
+# WHAT THIS PROVES
+
+At this point:
+you officially have:
+
+```txt id="0ys2wf"
+✔ hunt data
+✔ state system
+✔ loader system
+✔ rendering system
+```
+
+You now have:
+
+* modular content
+* centralized state
+* dynamic rendering
+* transition callbacks
+
+This is the beginning of the actual runtime loop.
+
+---
+
+# IMPORTANT WARNING
+
+Do NOT:
+
+* add switch statements yet
+* add node-type rendering yet
+* add effects yet
+* add conditions yet
+* add styling logic here
+
+We want:
+
+> a stable minimal render pipeline first.
+
+---
+
+# NEXT FILE
+
+Now comes the important one:
+
+```txt id="b6n50f"
+runtime/gameRuntime.js
+```
+
+This will finally:
+
+* wire systems together
+* load hunts
+* set current node
+* handle transitions
+* trigger rendering
+
+This is where V3 officially becomes interactive.
