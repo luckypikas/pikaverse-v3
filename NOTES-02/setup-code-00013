@@ -1,0 +1,270 @@
+Excellent.
+Now we add the first visual identity layer.
+
+This is intentionally:
+
+* minimal
+* cinematic
+* clean
+* atmospheric
+
+We are NOT building the final UI yet.
+
+We are establishing:
+
+> the V3 visual tone.
+
+---
+
+# FILE: `player/styles.css`
+
+Create this file and paste this EXACTLY:
+
+```css id="31px9g"
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+
+  min-height: 100vh;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  background:
+    radial-gradient(circle at top, #2a1840 0%, #090909 60%);
+
+  color: #f5f5f5;
+
+  font-family: Arial, sans-serif;
+}
+
+#app {
+  width: 100%;
+  max-width: 700px;
+
+  padding: 24px;
+}
+
+.node-container {
+  background: rgba(255, 255, 255, 0.08);
+
+  border: 1px solid rgba(255, 255, 255, 0.12);
+
+  border-radius: 20px;
+
+  padding: 32px;
+
+  backdrop-filter: blur(10px);
+
+  box-shadow:
+    0 0 30px rgba(0, 0, 0, 0.5);
+
+  text-align: center;
+}
+
+.node-container h1 {
+  margin-top: 0;
+
+  color: #f4c542;
+
+  font-size: 2rem;
+}
+
+.node-container p {
+  line-height: 1.6;
+
+  color: #dddddd;
+}
+
+.transitions {
+  margin-top: 32px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.transitions button {
+  padding: 14px 20px;
+
+  border: none;
+  border-radius: 12px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #6b3fd4,
+      #3d1d75
+    );
+
+  color: white;
+
+  font-size: 1rem;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.transitions button:hover {
+  transform: translateY(-2px);
+
+  opacity: 0.92;
+}
+```
+
+---
+
+# WHAT THIS FILE DOES
+
+This establishes the FIRST V3 visual layer:
+
+```txt id="lgjlwm"
+- cinematic darkness
+- violet atmosphere
+- gold accents
+- glass overlays
+- restrained neon
+```
+
+Exactly aligned with the V3 identity direction.
+
+---
+
+# IMPORTANT DESIGN PRINCIPLE
+
+Notice:
+
+* no clutter
+* no excessive glow
+* no chaotic cyberpunk overload
+
+The atmosphere feels:
+
+* premium
+* cinematic
+* intentional
+
+That’s the right direction.
+
+---
+
+# MOST IMPORTANT ARCHITECTURE WIN
+
+Visuals are now COMPLETELY separate from:
+
+* runtime
+* hunt data
+* state
+* navigation
+
+That separation is huge.
+
+---
+
+# YOU ARE NOW READY TO TEST
+
+At this point:
+
+Open:
+
+```txt id="lgbv7g"
+player/index.html
+```
+
+through a local server.
+
+NOT by double-clicking the file.
+
+Because:
+`fetch()` will fail under `file://`.
+
+---
+
+# EASIEST LOCAL SERVER OPTIONS
+
+## VS Code Live Server
+
+Recommended.
+
+OR:
+
+## Python
+
+```bash id="l8rm8u"
+python -m http.server
+```
+
+Then open:
+
+```txt id="f7zb8f"
+http://localhost:8000/player/
+```
+
+---
+
+# WHAT SHOULD HAPPEN
+
+You should see:
+
+```txt id="3w2xzm"
+Welcome
+↓
+Enter the portal
+↓
+Portal Room
+↓
+Continue forward
+↓
+Puzzle
+↓
+End
+```
+
+with:
+
+* dark cinematic UI
+* glass panel
+* animated buttons
+
+---
+
+# THIS IS A MAJOR MILESTONE
+
+Because now you officially have:
+
+```txt id="l18m7x"
+✔ modular hunt data
+✔ centralized runtime
+✔ state system
+✔ renderer
+✔ transitions
+✔ browser runtime
+✔ cinematic presentation
+```
+
+V3 is now alive.
+
+---
+
+# NEXT PHASE AFTER TESTING
+
+Once you confirm it works,
+we move into:
+
+```txt id="skm9jz"
+router.js
+effects.js
+conditions.js
+save system
+inventory rendering
+node registry
+```
+
+Which is where the real modular architecture expands.
