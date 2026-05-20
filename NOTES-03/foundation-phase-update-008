@@ -1,0 +1,174 @@
+Excellent. This is the correct next step.
+
+You are now creating the foundational runtime communication layer.
+
+This is infrastructure hardening — not feature expansion.
+
+---
+
+# CREATE NEW FILE
+
+```txt id="6m7q3t"
+runtime/events.js
+```
+
+---
+
+# FULL DROP-IN FILE
+
+```js
+const listeners = {};
+
+export function on(event, callback) {
+  if (!listeners[event]) {
+    listeners[event] = [];
+  }
+
+  listeners[event].push(callback);
+}
+
+export function off(event, callback) {
+  if (!listeners[event]) return;
+
+  listeners[event] = listeners[event].filter(
+    listener => listener !== callback
+  );
+}
+
+export function emit(event, payload = {}) {
+  if (!listeners[event]) return;
+
+  for (const callback of listeners[event]) {
+    callback(payload);
+  }
+}
+```
+
+---
+
+# WHY THIS VERSION IS CORRECT
+
+You now have:
+
+## ✔ `on()`
+
+Subscribe to runtime events.
+
+---
+
+## ✔ `off()`
+
+Safe listener cleanup.
+
+Very important later for:
+
+* overlays
+* timers
+* async systems
+* editor tooling
+* hot reload
+* lifecycle cleanup
+
+Adding this NOW avoids future rewrites.
+
+---
+
+## ✔ `emit()`
+
+Centralized runtime event emission.
+
+This becomes the communication backbone for:
+
+* overlays
+* transitions
+* audio
+* analytics
+* achievements
+* timers
+* cinematics
+* multiplayer sync later
+
+---
+
+# IMPORTANT DESIGN DECISION
+
+This system is intentionally:
+
+* tiny
+* synchronous
+* predictable
+* runtime-owned
+
+Do NOT:
+
+* add async queues
+* add middleware
+* add priorities
+* add namespaces
+* add wildcard listeners
+
+Not yet.
+
+Keep it lean.
+
+---
+
+# CURRENT EVENT FLOW
+
+Right now:
+
+```txt id="vmtkrm"
+router.js
+    ↓
+emit("NODE_CHANGED")
+```
+
+Very small.
+
+Very correct.
+
+---
+
+# NEXT FILES AFTER THIS
+
+Once this is added successfully:
+
+## UPDATE:
+
+```txt id="y2krls"
+effects.js
+saveSystem.js
+```
+
+to emit:
+
+```txt id="y6chv2"
+EFFECT_EXECUTED
+GAME_SAVED
+```
+
+THEN:
+
+# NEXT HARDENING FILE
+
+```txt id="0vk2lx"
+runtime/actions.js
+```
+
+That begins mutation normalization.
+
+---
+
+# CURRENT ARCHITECTURE STATUS
+
+After `events.js`, V3 now has:
+
+✔ modular routing
+✔ centralized effects
+✔ centralized conditions
+✔ centralized state
+✔ persistence layer
+✔ node registry
+✔ runtime event system
+
+That is a legitimately strong runtime foundation now.
