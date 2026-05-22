@@ -1,0 +1,300 @@
+Good — this is the right stabilization step. We’re not adding features here; we’re defining **rules that prevent future chaos**.
+
+---
+
+# 🧠 V3 RUNTIME — 3-TIER ARCHITECTURE CONTRACT (FINAL)
+
+This is the **official structural contract for your runtime system**.
+
+It defines:
+
+* what each layer is responsible for
+* what each layer is allowed to touch
+* what must NEVER cross boundaries
+
+---
+
+# 🥇 LAYER 1 — CORE (ENGINE KERNEL)
+
+## 📦 Purpose
+
+This is the **truth layer of the engine**.
+
+If CORE breaks, everything breaks.
+
+It must stay:
+
+* minimal
+* deterministic
+* side-effect controlled
+* dependency-light
+
+---
+
+## 📁 Modules (CORE)
+
+* `router.js`
+* `stateStore.js`
+* `lifecycle.js`
+* `loader.js`
+
+---
+
+## 🧠 Responsibilities
+
+CORE owns:
+
+### ✔ Navigation truth
+
+* current node
+* transition execution
+* routing pipeline order
+
+### ✔ Global state truth
+
+* inventory (raw state store)
+* flags
+* rewards
+* save/load state
+
+### ✔ Lifecycle coordination
+
+* event timing
+* before/after hooks
+
+### ✔ Data loading
+
+* hunts
+* nodes
+* registry resolution
+
+---
+
+## 🚫 CORE IS NOT ALLOWED TO:
+
+* import scene systems
+* import audio/choreography
+* import UI/renderer logic
+* import debug tools
+* contain game-specific logic rules
+
+---
+
+## 💡 CORE RULE
+
+> CORE only decides *what happens*, never *how it looks or feels*
+
+---
+
+# 🥈 LAYER 2 — SYSTEMS (GAME RULE ENGINE)
+
+## 📦 Purpose
+
+This layer defines **gameplay logic and rules**.
+
+It is still deterministic, but not structural.
+
+---
+
+## 📁 Modules (SYSTEMS)
+
+* `effects.js`
+* `actions.js`
+* `conditions.js`
+* `inventory.js`
+* `effectRegistry.js`
+* `actionRegistry.js`
+* `conditionRegistry.js`
+* `nodeRegistry.js`
+
+---
+
+## 🧠 Responsibilities
+
+SYSTEMS own:
+
+### ✔ Game logic execution
+
+* effects execution
+* actions dispatch
+* conditions evaluation
+
+### ✔ Rule resolution
+
+* inventory logic
+* gating logic
+* rewards logic
+
+### ✔ Plugin-style behavior
+
+* registry-based extensibility
+
+---
+
+## 🚫 SYSTEMS ARE NOT ALLOWED TO:
+
+* control routing directly
+* manage scenes or audio
+* manipulate DOM/UI directly
+* trigger lifecycle flow manually
+* bypass router pipeline
+
+---
+
+## 💡 SYSTEM RULE
+
+> SYSTEMS decide *what game rules do*, not when or how transitions occur
+
+---
+
+# 🥉 LAYER 3 — EXTENSIONS (EXPERIENCE + OBSERVABILITY)
+
+## 📦 Purpose
+
+This layer controls everything that is:
+
+* visual
+* auditory
+* cinematic
+* debugging
+* non-deterministic experience layer
+
+---
+
+## 📁 Modules (EXTENSIONS)
+
+* `renderer.js`
+* `sceneManager.js`
+* `sceneAudio.js`
+* `sceneChoreography.js`
+* `cinematics.js`
+* `transitionMiddleware.js`
+* `debugBus.js`
+
+---
+
+## 🧠 Responsibilities
+
+EXTENSIONS own:
+
+### ✔ Presentation
+
+* rendering nodes
+* UI updates
+* transitions/fades
+
+### ✔ Scene orchestration (reactive only)
+
+* scene enter/exit reactions
+* audio playback
+* choreography timing
+
+### ✔ Middleware hooks
+
+* non-core intervention layers
+* visual modifiers
+* timing adjustments
+
+### ✔ Debug + inspection
+
+* event tracing
+* runtime visibility
+
+---
+
+## 🚫 EXTENSIONS ARE NOT ALLOWED TO:
+
+* modify core state directly (no raw mutation authority)
+* bypass router
+* enforce game rules
+* determine node validity
+* override lifecycle execution order
+
+---
+
+## 💡 EXTENSION RULE
+
+> EXTENSIONS react to the engine — they never drive it
+
+---
+
+# 🧭 CROSS-LAYER RULES (CRITICAL)
+
+## ✔ Allowed dependency flow ONLY:
+
+```
+CORE → SYSTEMS → EXTENSIONS
+```
+
+## ❌ NEVER ALLOWED:
+
+```
+EXTENSIONS → CORE
+SYSTEMS → CORE (direct mutation bypass)
+EXTENSIONS → SYSTEMS (rule injection)
+```
+
+---
+
+# 🧠 WHY THIS FIXES YOUR CURRENT ENGINE
+
+This contract directly stabilizes:
+
+### ✔ SceneManager drift
+
+→ forced into EXTENSIONS only
+
+### ✔ Effect system expansion
+
+→ confined to SYSTEMS only
+
+### ✔ Router authority ambiguity
+
+→ locked into CORE only
+
+### ✔ Debug system sprawl
+
+→ isolated in EXTENSIONS
+
+---
+
+# 🚨 MOST IMPORTANT INSIGHT
+
+You were NOT building too many systems.
+
+The real risk was:
+
+> unclear ownership boundaries between systems
+
+This contract fixes that.
+
+---
+
+# 🧭 WHAT YOU NOW HAVE
+
+You now have a properly defined engine structure:
+
+* ✔ deterministic core
+* ✔ isolated rule engine
+* ✔ reactive experience layer
+* ✔ enforced directionality of dependencies
+
+---
+
+# 🚀 NEXT STEP (ONLY AFTER THIS IS DIGESTED)
+
+Now we can safely move forward to:
+
+## 👉 “formalize runtime dependency boundary enforcement layer”
+
+That will turn this from a **design document into enforced architecture** (guards, lint rules, runtime checks, or import policing).
+
+---
+
+If you want, I can also next:
+
+* map your **actual current files into this 3-tier model**
+* highlight any hidden violations
+* or design a “dependency validator” that catches drift automatically
+
+Just tell me.
