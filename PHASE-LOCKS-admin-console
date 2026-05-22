@@ -1,0 +1,393 @@
+Good — this is the right moment to do this. You’re far enough in that the architecture matters more than adding features.
+
+Below is a **full V3 “phase map” + risk model** of where you are, where you’re going, and what can quietly go wrong if you don’t keep boundaries tight.
+
+---
+
+# 🧭 PIKAVERSE V3 — END-TO-END ARCHITECTURE PHASE MAP
+
+## 🧱 PHASE 0 — CORE CONTRACT (FOUNDATION LOCK)
+
+### Purpose
+
+Define what the engine *is* before adding systems.
+
+### Includes
+
+* stateStore (single source of truth)
+* loader (hunt → runtime data)
+* node schema (contracts)
+* router (transition spine)
+* lifecycle (event spine)
+
+### Output
+
+> A deterministic, headless engine that can move between nodes
+
+---
+
+### ⚠️ DANGER ZONE
+
+* duplicating state in multiple places
+* “temporary state stores” creeping in
+* logic inside UI layers
+
+### ❌ DRIFT WARNING
+
+If you see:
+
+* `inventory inside renderer`
+* `scene logic inside player`
+  → STOP immediately
+
+---
+
+# ⚙️ PHASE 1 — TRANSITION ENGINE (YOU ARE HERE)
+
+### Purpose
+
+Make node movement reliable and deterministic.
+
+### Includes
+
+* Router (phased transition system)
+* conditions
+* effects system
+* transition middleware
+* lifecycle hooks
+
+### Output
+
+> A safe, repeatable node transition pipeline
+
+---
+
+### ⚠️ KEY RISKS
+
+### 1. “Dual Authority Problem”
+
+If BOTH of these modify state:
+
+* Router
+* SceneManager
+
+❌ YOU GET SPLIT BRAIN ENGINE
+
+✔ Rule:
+
+> ONLY router commits truth
+
+---
+
+### 2. Hidden side effects
+
+* effects triggering navigation
+* lifecycle triggering state mutation
+* middleware mutating node data
+
+---
+
+### 3. Over-hooking lifecycle
+
+Too many hooks = invisible execution chains
+
+---
+
+### DRIFT SIGNALS
+
+* "just one more hook"
+* "we'll intercept it here"
+* "scene manager also updates state"
+
+---
+
+# 🎬 PHASE 2 — SCENE LAYER (YOU ARE HERE / EARLY)
+
+### Purpose
+
+Add **semantic grouping over nodes**
+
+### Includes
+
+* sceneManager
+* scene transitions
+* scene context
+* audio hooks (optional)
+* choreography system
+
+---
+
+### ⚠️ CRITICAL ARCHITECTURAL RULE
+
+> SceneManager is OBSERVATIONAL, not authoritative
+
+### Meaning:
+
+* It reacts to router
+* It does NOT decide navigation
+* It does NOT mutate state
+
+---
+
+### 🚨 COMMON FAILURE MODE
+
+SceneManager becomes:
+
+* second router
+* second state machine
+
+❌ THIS BREAKS THE ENTIRE SYSTEM
+
+---
+
+### ✔ SAFE MODEL
+
+```
+Router → emits node change
+        ↓
+SceneManager → observes + reacts
+        ↓
+Player systems (audio, visuals)
+```
+
+---
+
+# 🎞 PHASE 3 — EXPERIENCE LAYER (PLAYER SYSTEMS)
+
+### Purpose
+
+Make transitions feel alive.
+
+### Includes
+
+* cinematics
+* scene audio
+* choreography
+* overlays
+* animations
+* UI transitions
+
+---
+
+### ⚠️ BIGGEST RISK HERE
+
+> “Experience systems start controlling logic”
+
+Example anti-patterns:
+
+* audio triggers node changes
+* animation delays affect state
+* choreography blocks routing
+
+---
+
+### ✔ RULE
+
+> Experience systems NEVER block engine
+
+They can:
+
+* delay visuals
+* animate transitions
+* enhance perception
+
+They cannot:
+
+* change nodes
+* modify state
+* override router
+
+---
+
+# 🔍 PHASE 4 — OBSERVABILITY LAYER (YOU ARE ENTERING THIS)
+
+### Purpose
+
+Make engine visible and inspectable
+
+### Includes
+
+* debugBus
+* nodeGraphInspector
+* runtime inspector (admin console foundation)
+* event tracing
+
+---
+
+### ⚠️ RISK
+
+* accidentally coupling debug tools into runtime logic
+* using debug state as production state
+
+---
+
+### ✔ RULE
+
+> Debug tools are read-only mirrors
+
+Never:
+
+* mutate state
+* trigger gameplay logic
+* influence router decisions
+
+---
+
+# 🧑‍💻 PHASE 5 — CREATOR LAYER (FUTURE)
+
+### Purpose
+
+Make system editable without code
+
+### Includes
+
+* admin console
+* node editor
+* scene editor
+* hunt builder UI
+
+---
+
+### ⚠️ BIGGEST LONG-TERM RISK
+
+> Creator layer accidentally becomes runtime
+
+If this happens:
+
+* engine loses determinism
+* debugging becomes impossible
+* behavior becomes inconsistent between tools and game
+
+---
+
+### ✔ RULE
+
+> Creator tools generate data ONLY
+
+They never execute gameplay logic directly.
+
+---
+
+# 🌐 GLOBAL ARCHITECTURAL RISKS (IMPORTANT)
+
+## 1. ❌ Dual State Systems (CRITICAL)
+
+You must NEVER have:
+
+* stateStore.inventory
+* inventory.js inventory
+* scene state
+* runtime state duplicates
+
+✔ Only ONE truth per domain
+
+---
+
+## 2. ❌ Multiple transition authorities
+
+Only router may:
+
+* change node
+* commit transitions
+
+SceneManager must NEVER:
+
+* call router.goTo internally
+
+---
+
+## 3. ❌ Event explosion (silent killer)
+
+Too many:
+
+* lifecycle hooks
+* debug events
+* middleware interceptors
+
+leads to:
+
+> “invisible logic maze”
+
+---
+
+## 4. ❌ Folder creep
+
+If runtime becomes:
+
+* 40+ files without grouping
+* overlapping responsibilities
+* unclear ownership
+
+you lose:
+
+* predictability
+* onboarding clarity
+* debugging speed
+
+---
+
+## 5. ❌ Naming drift
+
+Danger signs:
+
+* sceneManager2
+* routerFinalV3
+* effects_new
+* stateStore_backup
+
+---
+
+# 🧠 YOUR CURRENT POSITION (HONEST ASSESSMENT)
+
+You are currently:
+
+## ✔ Past Phase 1 (transition engine = stable)
+
+## ✔ Entering Phase 2 (scene system = stabilizing)
+
+## ✔ Beginning Phase 3 (experience layer = emerging)
+
+## ✔ Starting Phase 4 (debug/inspection = just began)
+
+---
+
+# 🎯 WHAT YOU ARE BUILDING (BIG PICTURE)
+
+Not a game engine.
+
+Not a framework.
+
+But:
+
+> **A deterministic narrative runtime with observable scene intelligence and creator tooling layered on top**
+
+---
+
+# 🚦 NEXT SAFE MOVE OPTIONS
+
+Now that we’ve stabilized the map, your safest next steps are:
+
+### A. Lock SceneManager as “observer-only contract”
+
+(prevent future drift)
+
+### B. Formalize DebugBus → single inspection spine
+
+(unifies all logs + graph inspector + admin console)
+
+### C. Define “Engine Contract Layer”
+
+(explicit rulebook for runtime boundaries)
+
+### D. Begin Admin Console (read-only inspector)
+
+(safe because it doesn’t mutate anything)
+
+---
+
+If you want my recommendation:
+
+> 👉 Do **C first (Engine Contract Layer)**
+> because it prevents all future architectural drift before we build more tools.
+
+Just tell me and we’ll lock it in cleanly.
