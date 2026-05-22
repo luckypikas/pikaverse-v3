@@ -1,0 +1,203 @@
+Good question — this is exactly the point where teams either stabilize an engine or accidentally keep adding layers forever.
+
+I’ll split this into two parts:
+
+---
+
+# 🧠 1. PROMPTS TO PREVENT ARCHITECTURAL DRIFT
+
+These are **guardrail prompts** you can reuse anytime you feel the system getting “too layered” or inconsistent.
+
+You can literally paste these at the start of a session.
+
+---
+
+## 🔒 PROMPT 1 — “NO NEW SYSTEMS WITHOUT JUSTIFICATION”
+
+> Before proposing any new file, layer, or subsystem, first classify it as one of:
+>
+> * State
+> * Navigation
+> * Effects
+> * Actions
+> * Experience Layer (scene/audio/choreo)
+>
+> If it does not clearly belong to one of these, it is either:
+>
+> * redundant
+> * a merge candidate
+> * or unnecessary abstraction
+>
+> Do not introduce new architectural categories without explicitly showing why existing ones are insufficient.
+
+---
+
+## 🔒 PROMPT 2 — “MERGE-FIRST RULE”
+
+> If a new feature overlaps with an existing system (routing, lifecycle, scene management, effects, or choreography), prioritize merging or extending existing systems instead of creating a new subsystem.
+
+---
+
+## 🔒 PROMPT 3 — “NO PARALLEL ORCHESTRATION SYSTEMS”
+
+> There must only be one orchestration spine in the engine.
+>
+> If a proposed system:
+>
+> * schedules transitions
+> * controls scene flow
+> * or sequences gameplay steps
+>
+> it must integrate into the existing pipeline, not exist alongside it.
+
+---
+
+## 🔒 PROMPT 4 — “DEPENDENCY DISCIPLINE CHECK”
+
+> Before approving a new module, verify:
+>
+> * Does it depend on router?
+> * Does it depend on lifecycle?
+> * Does it duplicate effects or actions?
+>
+> If yes to more than one orchestration layer, it is likely a duplication risk.
+
+---
+
+## 🔒 PROMPT 5 — “ENGINE VS FEATURE TEST”
+
+> Ask:
+> “Is this an engine primitive, or a gameplay feature?”
+>
+> If it is gameplay, it must NOT become a new system layer.
+
+---
+
+## 🔒 PROMPT 6 — “ONE SOURCE OF TRUTH RULE”
+
+> For any domain (inventory, scene state, audio, flags):
+> there must be exactly one authoritative system.
+>
+> Everything else is a consumer or adapter.
+
+---
+
+# 🧭 2. ARE YOU READY TO REBUILD ADMIN CONSOLE + GAMEPLAY SYSTEM?
+
+Short answer:
+
+## ✔ YES — BUT NOT YET IN THE WAY V2 DID IT
+
+You are actually in a **better position than V2 ever was**, because:
+
+### ✔ You now have:
+
+* deterministic router
+* stateStore foundation
+* inventory system stabilized
+* effect/action separation
+* scene layer beginning to stabilize
+* registry-based extensibility
+* lifecycle hooks (even if simple)
+
+That is already a **real engine core**, not a prototype.
+
+---
+
+## ⚠ BUT YOU ARE MISSING ONE THING BEFORE V2-STYLE BUILDING RETURNS
+
+Right now you still lack:
+
+# 👉 A SINGLE “ORCHESTRATION SPINE”
+
+This is the missing stabilizer.
+
+Without it:
+
+* admin tools will bind to multiple systems
+* UI will trigger conflicting flows
+* debugging becomes impossible again
+
+---
+
+# 🧠 WHAT V2 DID WRONG (SO YOU DON’T REPEAT IT)
+
+V2 typically:
+
+* mixed UI + runtime logic
+* embedded state in multiple places
+* lacked a single transition pipeline
+* allowed features to create their own rules
+
+That’s exactly what you are now carefully avoiding.
+
+---
+
+# 🚀 WHAT YOU *CAN* SAFELY DO NEXT (AFTER CONSOLIDATION)
+
+Once we unify the transition spine, THEN you are ready for:
+
+## ✔ Admin Console (YES)
+
+You can build:
+
+* node editor
+* inventory inspector
+* scene previewer
+* effect debugger
+
+## ✔ Gameplay System Expansion (YES)
+
+You can safely add:
+
+* puzzles
+* timers
+* traps
+* rewards
+* branching logic
+
+## ✔ Creator Tools (YES — BIG ONE)
+
+Because your `/creator` folder already exists in philosophy.
+
+---
+
+# 🧭 FINAL HONEST ASSESSMENT
+
+### ✔ You are NOT too early
+
+### ✔ You are NOT overbuilt yet
+
+### ✔ You ARE slightly over-layered in orchestration
+
+### ✔ You ARE one consolidation step away from “safe scale mode”
+
+---
+
+# 🎯 SIMPLE RULE GOING FORWARD
+
+If you remember nothing else:
+
+> “We are allowed to add features, but not allowed to add new orchestration systems without merging first.”
+
+---
+
+# 👉 NEXT BEST STEP (WHEN YOU’RE READY)
+
+Not new features.
+
+Not admin UI.
+
+Not more systems.
+
+## 👉 “consolidate transition spine”
+
+That is the step that unlocks everything cleanly afterward.
+
+If you want, I can also map:
+
+* what gets deleted
+* what gets merged
+* what becomes the official pipeline
+
+before we touch any code.
