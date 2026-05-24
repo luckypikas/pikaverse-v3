@@ -1,0 +1,429 @@
+You’re right at the hinge point between “good philosophy” and “real engine,” so let’s cross it.
+
+You implicitly chose **“define schema”** with everything you’ve shared—foundation doc, screenshots, node editor, items, rewards, trace tooling, and color/UX direction.
+
+So I’ll do exactly what that last block proposes:
+
+> **Define the Hunt Schema = Engine Contract v1**
+
+This will be concrete, implementable, and aligned with everything you’ve already built.
+
+---
+
+## 1. Top-level hunt schema
+
+This is the **single JSON object** the runtime loads and the creator dashboard edits.
+
+```jsonc
+{
+  "id": "great-metaspace-race",
+  "title": "The Great MetaSpace Race",
+  "description": "A simple treasure hunt through space and time.",
+  "difficulty": "standard",          // optional: easy | standard | hard
+  "version": 1,                      // schema version
+  "settings": {
+    "globalTimerSeconds": 0,        // 0 = no global timer
+    "maxAttempts": 0,               // 0 = unlimited
+    "themeId": "default",           // maps to /themes
+    "backgroundImageId": "space_01" // host/admin-chosen background
+  },
+  "nodes": {
+    "start_001": { /* node object */ },
+    "portal_001": { /* node object */ },
+    "puzzle_001": { /* node object */ }
+  },
+  "items": {
+    "ruby_key": { /* item object */ },
+    "silver_token": { /* item object */ }
+  },
+  "rewards": {
+    "reward_001": { /* reward object */ }
+  },
+  "sponsors": {
+    "sponsor_001": { /* sponsor object */ }
+  }
+}
+```
+
+Key points:
+
+- **Hunts are data** (locked philosophy).
+- Nodes, items, rewards, sponsors are **separate domains** but live in the same hunt file (or can be split later).
+
+---
+
+## 2. Base node contract (all node types)
+
+Every node type must obey this base shape:
+
+```jsonc
+{
+  "id": "node_001",
+  "type": "start",                 // one of the standard node types
+  "title": "Start your engines!",
+  "body": "It's time to go all in!",
+  "sceneId": "scene_001",          // optional grouping
+  "next": null,                    // simple next (for linear nodes)
+  "choices": [],                   // branching choices (for story/puzzle/etc.)
+  "requirements": {
+    "items": [],                   // ["ruby_key", "silver_token"]
+    "flags": [],                   // ["solved_intro_riddle"]
+    "expression": ""               // optional advanced condition string
+  },
+  "onEnter": {
+    "effects": [],                 // effect objects
+    "rewardId": null               // reward on enter (optional)
+  },
+  "onExit": {
+    "effects": [],
+    "rewardId": null               // reward on exit (optional)
+  },
+  "timer": {
+    "seconds": 0,                  // 0 = no node timer
+    "onExpireNodeId": null         // where to go if timer expires
+  },
+  "failNodeId": null,              // where to go if requirements fail
+  "metadata": {}                   // free-form creator/runtime metadata
+}
+```
+
+This is the **universal contract**. Node types then **extend** this.
+
+---
+
+## 3. Node type specializations (V1 ecosystem)
+
+You already locked the node list:
+
+`start, story, portal, puzzle, wordPuzzle, trivia, riddle, timer, checkpoint, trap, gem, reward, deadEnd, doors, inventory, luck, upload, link, map, qr, end`
+
+We don’t need 21 different schemas—we need **base + type-specific fields**.
+
+### Example: `start` node
+
+```jsonc
+{
+  "id": "start_001",
+  "type": "start",
+  "title": "Start your engines!",
+  "body": "It's time to go all in!",
+  "next": "portal_001",
+  "choices": [],
+  "requirements": { "items": [], "flags": [], "expression": "" },
+  "onEnter": { "effects": [], "rewardId": null },
+  "onExit": { "effects": [], "rewardId": null },
+  "timer": { "seconds": 0, "onExpireNodeId": null },
+  "failNodeId": null,
+  "metadata": {
+    "isEntryPoint": true
+  }
+}
+```
+
+### Example: `gem` node (matches your UI screenshot)
+
+```jsonc
+{
+  "id": "node_001",
+  "type": "gem",
+  "title": "Find The Landmark",
+  "body": "Charlotte, NC",
+  "next": "node_002",
+  "choices": [],
+  "requirements": { "items": [], "flags": [], "expression": "" },
+  "onEnter": {
+    "effects": [
+      {
+        "type": "grantItem",
+        "itemId": "ruby"
+      }
+    ],
+    "rewardId": null
+  },
+  "onExit": { "effects": [], "rewardId": null },
+  "timer": { "seconds": 0, "onExpireNodeId": null },
+  "failNodeId": null,
+  "metadata": {
+    "gemId": "ruby"
+  }
+}
+```
+
+### Example: `link` node
+
+```jsonc
+{
+  "id": "link_001",
+  "type": "link",
+  "title": "Visit our sponsor",
+  "body": "Open this link to continue your journey.",
+  "next": "node_010",
+  "choices": [],
+  "requirements": { "items": [], "flags": [], "expression": "" },
+  "onEnter": { "effects": [], "rewardId": null },
+  "onExit": { "effects": [], "rewardId": null },
+  "timer": { "seconds": 0, "onExpireNodeId": null },
+  "failNodeId": null,
+  "metadata": {
+    "url": "https://example.com",
+    "openMode": "external" // or "in-app"
+  }
+}
+```
+
+---
+
+## 4. Transitions & choices
+
+You already have:
+
+- **simple next** (`next`)
+- **branching** (`choices`)
+
+Let’s formalize `choices`:
+
+```jsonc
+"choices": [
+  {
+    "id": "choice_001",
+    "label": "Take the left path",
+    "next": "node_left",
+    "requirements": {
+      "items": [],
+      "flags": [],
+      "expression": ""
+    },
+    "effects": [] // optional effects on choosing this path
+  }
+]
+```
+
+Runtime rules:
+
+- If `choices.length > 0` → node is **branching**.
+- If `choices.length === 0` and `next` is set → node is **linear**.
+- If neither is set → node is **terminal** (end or deadEnd).
+
+---
+
+## 5. Effects system binding
+
+Effects are **data**, not code.
+
+```jsonc
+{
+  "type": "setFlag",          // "grantItem", "removeItem", "playSound", "showPopup", etc.
+  "flagId": "intro_complete", // for setFlag
+  "value": true
+}
+```
+
+Examples:
+
+- `grantItem` → `{ "type": "grantItem", "itemId": "ruby_key" }`
+- `removeItem` → `{ "type": "removeItem", "itemId": "ruby_key" }`
+- `setFlag` → `{ "type": "setFlag", "flagId": "solved_riddle_1", "value": true }`
+- `playSound` → `{ "type": "playSound", "soundId": "portal_whoosh" }`
+- `showPopup` → `{ "type": "showPopup", "title": "Nice!", "body": "You found a secret." }`
+
+Runtime:
+
+- Executes `onEnter.effects` when entering node.
+- Executes `onExit.effects` when leaving node.
+- Executes `choice.effects` when that choice is selected.
+
+---
+
+## 6. Inventory & rewards
+
+### Items
+
+Matches your “Items” screen:
+
+```jsonc
+"items": {
+  "ruby_key": {
+    "id": "ruby_key",
+    "label": "Ruby Key",
+    "description": "Opens the ancient vault.",
+    "iconId": "ruby_key_icon",
+    "metadata": {}
+  }
+}
+```
+
+### Rewards
+
+```jsonc
+"rewards": {
+  "reward_001": {
+    "id": "reward_001",
+    "label": "Golden Trophy",
+    "description": "Awarded for completing the hunt.",
+    "items": ["golden_trophy_item_id"],
+    "points": 3000,
+    "metadata": {}
+  }
+}
+```
+
+Nodes reference rewards via `onEnter.rewardId` / `onExit.rewardId`.
+
+---
+
+## 7. Sponsors (layer, not node type)
+
+Sponsors attach via **metadata**, not node type.
+
+```jsonc
+"sponsors": {
+  "sponsor_001": {
+    "id": "sponsor_001",
+    "name": "Pika Cola",
+    "logoId": "pika_cola_logo",
+    "url": "https://pikacola.com",
+    "metadata": {}
+  }
+}
+```
+
+Attachment model:
+
+- **Global**: `hunt.settings.sponsorIds: ["sponsor_001"]`
+- **Per-node**: `node.metadata.sponsorId: "sponsor_001"`
+
+Runtime:
+
+- Uses this to show overlays, logos, or link nodes—but **sponsors never become node types**.
+
+---
+
+## 8. How this maps to your current UI
+
+- **Admin dashboard / node editor**  
+  - Edits `nodes[id]` objects (type, title, body, next, choices, requirements, effects, timer, failNodeId).
+  - “State Effects (JSON)” in your UI → `onEnter.effects` / `onExit.effects`.
+  - “Reward on Enter/Exit” → `onEnter.rewardId` / `onExit.rewardId`.
+  - “Requires Items” → `requirements.items`.
+  - “Fail Node ID” → `failNodeId`.
+
+- **Items screen**  
+  - Edits `items[id]`.
+
+- **Rewards screen**  
+  - Edits `rewards[id]`.
+
+- **Gameplay screen**  
+  - Reads from `nodes`, `items`, `rewards`, `settings`.
+  - Uses runtime state + this schema to render everything.
+
+---
+
+## 9. One concrete mini-hunt example (start → portal → puzzle → end)
+
+```jsonc
+{
+  "id": "demo-hunt",
+  "title": "Demo Hunt",
+  "description": "start → portal → puzzle → end",
+  "difficulty": "standard",
+  "version": 1,
+  "settings": {
+    "globalTimerSeconds": 0,
+    "maxAttempts": 0,
+    "themeId": "default",
+    "backgroundImageId": "bg_chamber"
+  },
+  "nodes": {
+    "start_001": {
+      "id": "start_001",
+      "type": "start",
+      "title": "Begin your adventure",
+      "body": "Your adventure begins in a dimly lit chamber.",
+      "next": "portal_001",
+      "choices": [],
+      "requirements": { "items": [], "flags": [], "expression": "" },
+      "onEnter": { "effects": [], "rewardId": null },
+      "onExit": { "effects": [], "rewardId": null },
+      "timer": { "seconds": 0, "onExpireNodeId": null },
+      "failNodeId": null,
+      "metadata": {}
+    },
+    "portal_001": {
+      "id": "portal_001",
+      "type": "portal",
+      "title": "Enter the portal",
+      "body": "A swirling portal hums in front of you.",
+      "next": "puzzle_001",
+      "choices": [],
+      "requirements": { "items": [], "flags": [], "expression": "" },
+      "onEnter": { "effects": [], "rewardId": null },
+      "onExit": { "effects": [], "rewardId": null },
+      "timer": { "seconds": 0, "onExpireNodeId": null },
+      "failNodeId": null,
+      "metadata": {}
+    },
+    "puzzle_001": {
+      "id": "puzzle_001",
+      "type": "puzzle",
+      "title": "The First Riddle",
+      "body": "I speak without a mouth and hear without ears. What am I?",
+      "next": null,
+      "choices": [
+        {
+          "id": "choice_echo",
+          "label": "Echo",
+          "next": "end_001",
+          "requirements": { "items": [], "flags": [], "expression": "" },
+          "effects": [
+            { "type": "setFlag", "flagId": "puzzle_1_solved", "value": true }
+          ]
+        }
+      ],
+      "requirements": { "items": [], "flags": [], "expression": "" },
+      "onEnter": { "effects": [], "rewardId": null },
+      "onExit": { "effects": [], "rewardId": null },
+      "timer": { "seconds": 60, "onExpireNodeId": "end_001" },
+      "failNodeId": null,
+      "metadata": {}
+    },
+    "end_001": {
+      "id": "end_001",
+      "type": "end",
+      "title": "The End… For Now",
+      "body": "You step out of the chamber, changed.",
+      "next": null,
+      "choices": [],
+      "requirements": { "items": [], "flags": [], "expression": "" },
+      "onEnter": { "effects": [], "rewardId": "reward_001" },
+      "onExit": { "effects": [], "rewardId": null },
+      "timer": { "seconds": 0, "onExpireNodeId": null },
+      "failNodeId": null,
+      "metadata": {}
+    }
+  },
+  "items": {},
+  "rewards": {
+    "reward_001": {
+      "id": "reward_001",
+      "label": "First Clear",
+      "description": "Awarded for completing the demo hunt.",
+      "items": [],
+      "points": 1000,
+      "metadata": {}
+    }
+  },
+  "sponsors": {}
+}
+```
+
+---
+
+If you’re good with this direction, next I can:
+
+- turn this into a **`docs/hunt-schema-v1.md`**  
+- generate **TypeScript types** or **JSDoc typedefs** for the runtime  
+- wire it into your existing `demo-hunt.json` and show you the diff  
+
+Your call:  
+Do you want **schema doc**, **types**, or **live JSON migration** next?
