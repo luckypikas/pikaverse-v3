@@ -1,0 +1,374 @@
+Perfect.
+You’ve now locked the three hardest architectural layers:
+
+* runtime state
+* node contract
+* hunt contract
+
+That means the next step is no longer speculative design.
+
+Now we build the thing that makes the entire platform reliable:
+
+# 🧱 SCHEMA VALIDATION + REGISTRY ARCHITECTURE
+
+This is the layer that transforms raw JSON into:
+
+* safe runtime data
+* indexed registries
+* executable graph structures
+* validated references
+* deterministic runtime behavior
+
+Without this layer:
+
+* creator dashboard becomes fragile
+* saves become unsafe
+* broken references crash hunts
+* effects drift
+* runtime becomes unpredictable
+
+With this layer:
+
+* the engine becomes trustworthy
+
+---
+
+# 🧠 CORE PRINCIPLE
+
+The runtime should NEVER directly trust raw hunt JSON.
+
+Instead:
+
+```txt id="xj4qfx"
+Raw Hunt JSON
+    ↓
+Validator
+    ↓
+Registry Builder
+    ↓
+Runtime Context
+    ↓
+GameRuntime
+```
+
+That separation is critical.
+
+---
+
+# 🧱 THE NEW CORE ARCHITECTURE
+
+You now officially need four foundational systems:
+
+| System           | Responsibility             |
+| ---------------- | -------------------------- |
+| Validator        | schema correctness         |
+| Registry Builder | indexed lookup maps        |
+| Resolver         | cross-reference resolution |
+| Runtime Context  | hydrated executable hunt   |
+
+These become the backbone of V3.
+
+---
+
+# 🧱 1. VALIDATOR LAYER (FIRST SYSTEM)
+
+Purpose:
+
+# ✅ Reject invalid hunts BEFORE runtime starts
+
+This is extremely important.
+
+---
+
+# 🚨 VALIDATOR RESPONSIBILITIES
+
+The validator checks:
+
+## Structure
+
+* required fields exist
+* correct data types
+* schema version compatibility
+
+## References
+
+* node references exist
+* asset references exist
+* sponsor references exist
+* reward references exist
+
+## Runtime Safety
+
+* no duplicate IDs
+* no orphan transitions
+* no circular critical failures
+* valid timer configs
+
+## Creator Safety
+
+* invalid effect payloads
+* unsupported interactions
+* malformed requirements
+
+---
+
+# 🧠 VALIDATOR OUTPUT MODEL
+
+Recommended:
+
+```json id="qqjlwm"
+{
+  "valid": true,
+
+  "errors": [],
+
+  "warnings": []
+}
+```
+
+Warnings are important because:
+
+* creators make imperfect hunts
+* not every issue should block execution
+
+---
+
+# 🧱 2. REGISTRY BUILDER (CRITICAL SYSTEM)
+
+This is huge.
+
+The hunt contract uses arrays:
+
+```json id="7pk4vl"
+"nodes": []
+```
+
+But runtime should NOT search arrays repeatedly.
+
+So the registry builder creates lookup maps.
+
+---
+
+# ✅ EXAMPLE
+
+Input:
+
+```json id="rsn9fr"
+"nodes": [
+  { "id": "start_001" }
+]
+```
+
+Runtime registry:
+
+```json id="jlwmrn"
+Map {
+  "start_001" => nodeObject
+}
+```
+
+---
+
+# 🧠 OFFICIAL REGISTRIES
+
+You now officially need:
+
+| Registry        | Purpose               |
+| --------------- | --------------------- |
+| NodeRegistry    | progression lookup    |
+| AssetRegistry   | asset resolution      |
+| ItemRegistry    | inventory definitions |
+| RewardRegistry  | reward resolution     |
+| SponsorRegistry | sponsor resolution    |
+| ThemeRegistry   | theme resolution      |
+
+This becomes the runtime backbone.
+
+---
+
+# 🧱 3. RESOLVER LAYER
+
+This is subtle but extremely important.
+
+Resolvers connect registries together.
+
+Example:
+
+```json id="qhx6r1"
+"backgroundImageId": "bg_space"
+```
+
+becomes:
+
+```txt id="uxgydn"
+resolved asset object
+```
+
+during runtime hydration.
+
+---
+
+# 🧠 WHY THIS MATTERS
+
+Resolvers allow:
+
+* lazy loading
+* caching
+* asset swapping
+* theme overrides
+* localization later
+* CDN migration later
+
+without rewriting schema.
+
+---
+
+# 🧱 4. RUNTIME CONTEXT (VERY IMPORTANT)
+
+This is the final hydrated object passed into GameRuntime.
+
+Recommended shape:
+
+```json id="jv4p93"
+{
+  "hunt": {},
+  "registries": {},
+  "runtimeState": {},
+  "resolvedAssets": {},
+  "metadata": {}
+}
+```
+
+This becomes:
+
+# the actual executable world state
+
+---
+
+# 🚨 MOST IMPORTANT ARCHITECTURAL SHIFT
+
+The runtime should NEVER manipulate raw hunt data directly.
+
+Instead:
+
+# Runtime operates on:
+
+# hydrated runtime context
+
+That distinction is enormous.
+
+---
+
+# 🧱 RECOMMENDED FILE STRUCTURE (NEXT EVOLUTION)
+
+Your current structure is already strong.
+
+Now add:
+
+```txt id="lp0tld"
+runtime/
+├── validation/
+│   ├── validateHunt.js
+│   ├── validateNodes.js
+│   ├── validateEffects.js
+│   └── validateTransitions.js
+│
+├── registries/
+│   ├── buildNodeRegistry.js
+│   ├── buildAssetRegistry.js
+│   ├── buildItemRegistry.js
+│   └── buildRewardRegistry.js
+│
+├── resolvers/
+│   ├── resolveAssets.js
+│   ├── resolveTransitions.js
+│   └── resolveRequirements.js
+│
+├── hydration/
+│   └── createRuntimeContext.js
+```
+
+This is the correct architectural direction.
+
+---
+
+# 🧠 THE EXECUTION PIPELINE (OFFICIAL)
+
+This is now the canonical startup flow:
+
+```txt id="qjlwmx"
+Load Hunt JSON
+    ↓
+Validate Hunt
+    ↓
+Build Registries
+    ↓
+Resolve References
+    ↓
+Create Runtime Context
+    ↓
+Initialize Runtime State
+    ↓
+Start Runtime
+```
+
+This is the real V3 engine pipeline.
+
+---
+
+# 🚨 IMPORTANT THING YOU SHOULD NOT DO
+
+Do NOT:
+
+* add more node types
+* add more UI systems
+* add more effects
+* add more gameplay features
+
+until this layer exists.
+
+Because THIS layer determines whether the platform stays maintainable.
+
+---
+
+# 🧠 WHAT YOU SHOULD IMPLEMENT FIRST
+
+Correct order:
+
+## 1. Hunt Validator
+
+(simple first)
+
+Then:
+
+## 2. Registry Builder
+
+Then:
+
+## 3. Runtime Context Hydration
+
+Then:
+
+## 4. Resolver Passes
+
+That order matters.
+
+---
+
+# 🚀 AFTER THIS LAYER
+
+Once this exists:
+
+You officially unlock:
+
+* robust creator dashboard
+* safe imports/exports
+* multiplayer preparation
+* marketplace-ready hunts
+* analytics systems
+* cloud persistence later
+* version migration later
+
+without architectural rewrites.
+
+You are now designing platform infrastructure, not just gameplay systems anymore.
