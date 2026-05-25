@@ -1,0 +1,451 @@
+Good. Now we convert everything you designed into something you can actually build, scale, and not lose control of later.
+
+This is the moment V3 becomes a **real software system instead of an architecture concept**.
+
+---
+
+# 🧱 V3 CODEBASE ARCHITECTURE (REAL FILE SYSTEM DESIGN)
+
+## 🧠 CORE GOAL
+
+We are enforcing:
+
+> Clear separation between Engine, Creator, UI, and Platform systems
+
+No mixed responsibilities. No “mega runtime file creep.”
+
+---
+
+# 🧱 ROOT STRUCTURE
+
+```txt id="fs0"
+pikaverse-v3/
+│
+├── apps/
+├── engine/
+├── creator/
+├── player/
+├── platform/
+├── shared/
+├── assets/
+├── hunts/
+├── tools/
+├── docs/
+└── tests/
+```
+
+---
+
+# 🧠 1. /engine (CORE RUNTIME SYSTEM)
+
+This is your **pure execution engine**.
+
+No UI. No editor logic.
+
+---
+
+```txt id="fs1"
+engine/
+├── core/
+│   ├── GameRuntime.js
+│   ├── StateMachine.js
+│   ├── Context.js
+│
+├── nodes/
+│   ├── NodeRegistry.js
+│   ├── NodeExecutor.js
+│   ├── NodeTypes/
+│
+├── transitions/
+│   ├── TransitionEngine.js
+│   ├── TransitionResolver.js
+│
+├── effects/
+│   ├── EffectEngine.js
+│   ├── EffectRegistry.js
+│
+├── validation/
+│   ├── SchemaValidator.js
+│   ├── RuleEngine.js
+│
+├── registry/
+│   ├── HuntRegistry.js
+│   ├── AssetRegistry.js
+│
+└── index.js
+```
+
+---
+
+## 🧠 RULE
+
+👉 ENGINE = deterministic execution only
+
+---
+
+# 🧠 2. /creator (VISUAL AUTHORING SYSTEM)
+
+This is your **dashboard + graph editor + tooling layer**
+
+---
+
+```txt id="fs2"
+creator/
+├── dashboard/
+│   ├── WorkspaceManager.js
+│   ├── LayoutEngine.js
+│   ├── DockingSystem.js
+│
+├── graph/
+│   ├── GraphCanvas.js
+│   ├── NodeRenderer.js
+│   ├── EdgeRenderer.js
+│   ├── GraphSimulator.js
+│
+├── panels/
+│   ├── NodeEditorPanel.js
+│   ├── InspectorPanel.js
+│   ├── AssetPanel.js
+│   ├── EffectPanel.js
+│
+├── tools/
+│   ├── ToolRegistry.js
+│   ├── CommandBuilder.js
+│   ├── CommandRouter.js
+│
+├── state/
+│   ├── DraftStateManager.js
+│   ├── UIStateStore.js
+│
+└── index.js
+```
+
+---
+
+## 🧠 RULE
+
+👉 CREATOR = engine-driven simulation + command layer
+
+---
+
+# 🧠 3. /player (PLAY EXPERIENCE LAYER)
+
+This is what real users see.
+
+---
+
+```txt id="fs3"
+player/
+├── ui/
+│   ├── GameScreen.js
+│   ├── NodeView.js
+│   ├── HUD.js
+│
+├── systems/
+│   ├── InputController.js
+│   ├── SessionManager.js
+│
+└── index.js
+```
+
+---
+
+## 🧠 RULE
+
+👉 PLAYER = read-only runtime execution
+
+No editing logic ever.
+
+---
+
+# 🧠 4. /platform (META SYSTEMS)
+
+This is your **product layer + persistence + versioning + orchestration**
+
+---
+
+```txt id="fs4"
+platform/
+├── persistence/
+│   ├── DraftStore.js
+│   ├── PublishStore.js
+│   ├── ArchiveStore.js
+│
+├── versioning/
+│   ├── VersionManager.js
+│   ├── MigrationEngine.js
+│   ├── DiffEngine.js
+│
+├── commands/
+│   ├── CommandSystem.js
+│   ├── CommandExecutor.js
+│   ├── CommandValidation.js
+│
+├── inspector/
+│   ├── EventBus.js
+│   ├── SnapshotStore.js
+│   ├── DebugController.js
+│
+└── index.js
+```
+
+---
+
+## 🧠 RULE
+
+👉 PLATFORM = everything that makes V3 a product, not a runtime
+
+---
+
+# 🧠 5. /shared (CRITICAL GLUE LAYER)
+
+This is where consistency lives.
+
+---
+
+```txt id="fs5"
+shared/
+├── schema/
+│   ├── HuntSchema.js
+│   ├── NodeSchema.js
+│   ├── EffectSchema.js
+│
+├── types/
+│   ├── commands.types.js
+│   ├── runtime.types.js
+│
+├── constants/
+│   ├── nodeTypes.js
+│   ├── effectTypes.js
+│
+├── utils/
+│   ├── deepClone.js
+│   ├── idGenerator.js
+│
+└── events/
+    ├── eventTypes.js
+```
+
+---
+
+## 🧠 RULE
+
+👉 SHARED = zero business logic
+
+Only contracts, types, constants
+
+---
+
+# 🧠 6. /apps (ENTRY POINTS)
+
+This is how everything boots.
+
+---
+
+```txt id="fs6"
+apps/
+├── creator-app/
+│   ├── main.js
+│   ├── bootstrap.js
+│
+├── player-app/
+│   ├── main.js
+│   ├── bootstrap.js
+│
+└── dev-app/
+    ├── main.js
+    ├── inspector-mode.js
+```
+
+---
+
+## 🧠 RULE
+
+👉 APPS = orchestration only
+
+No logic. No systems.
+
+---
+
+# 🧠 7. /hunts (DATA LAYER)
+
+This is your actual content.
+
+---
+
+```txt id="fs7"
+hunts/
+├── demo-hunt.json
+├── published/
+├── drafts/
+└── archives/
+```
+
+---
+
+## 🧠 RULE
+
+👉 HUNTS = pure data only
+
+No code. Ever.
+
+---
+
+# 🧠 8. /assets (MEDIA SYSTEM)
+
+```txt id="fs8"
+assets/
+├── images/
+├── audio/
+├── icons/
+└── registry.json
+```
+
+---
+
+## IMPORTANT RULE
+
+Assets are ALWAYS referenced by:
+
+```txt
+assetId → registry lookup → file
+```
+
+Never raw paths in engine or UI.
+
+---
+
+# 🧠 9. /tools (DEV + DEBUG + EXTENSIONS)
+
+```txt id="fs9"
+tools/
+├── inspector-tools/
+├── graph-tools/
+├── migration-tools/
+└── cli/
+```
+
+---
+
+# 🧠 10. /docs (SYSTEM TRUTH SOURCE)
+
+```txt id="fs10"
+docs/
+├── architecture/
+├── schema/
+├── engine-spec/
+└── creator-guide/
+```
+
+---
+
+# 🧠 CRITICAL ARCHITECTURAL RULES (NON-NEGOTIABLE)
+
+## 1. Engine is isolated
+
+* no UI imports
+* no creator logic
+
+## 2. Creator uses commands only
+
+* never mutates engine directly
+
+## 3. Player is read-only
+
+* no schema editing ever
+
+## 4. Platform controls lifecycle
+
+* persistence
+* versioning
+* debugging
+
+## 5. Shared is sacred
+
+* no side effects allowed
+
+---
+
+# 🧱 DATA FLOW (FULL SYSTEM)
+
+```txt id="fs11"
+Creator UI
+   ↓
+Command System
+   ↓
+Platform Layer
+   ↓
+Engine Layer
+   ↓
+Runtime State
+   ↓
+Player Rendering
+```
+
+---
+
+# 🧠 WHAT THIS ARCHITECTURE SOLVES
+
+✔ no more file chaos
+✔ no more mixed responsibilities
+✔ no more dev tool leakage into runtime
+✔ clean separation of concerns
+✔ scalable creator platform foundation
+✔ multiplayer-ready architecture path
+✔ plugin-ready structure
+
+---
+
+# 🚀 FINAL RESULT
+
+You now have a system that is structurally equivalent to:
+
+* Unreal Engine (runtime separation)
+* Unity Editor (creator tools)
+* Roblox Studio (graph + simulation model)
+* Notion-like modular system (workspace + panels)
+
+---
+
+# 🧭 NEXT STEP OPTIONS (YOU CHOOSE NOW)
+
+At this point, we move into implementation.
+
+You can choose:
+
+---
+
+## 👉 A) “BUILD BOOTSTRAP FILES”
+
+We generate:
+
+* actual `main.js` entrypoints
+* engine initialization order
+* creator app boot flow
+
+---
+
+## 👉 B) “BUILD GRAPH ENGINE IMPLEMENTATION PLAN”
+
+We turn graph system into:
+
+* real component code structure
+* rendering strategy (canvas vs DOM)
+* performance model
+
+---
+
+## 👉 C) “BUILD COMMAND SYSTEM CODE”
+
+We implement:
+
+* command router
+* executor
+* validation pipeline
+* undo/redo engine
+
+---
+
+Say the letter.
+
+We are now in **real build phase**, not design phase anymore.
