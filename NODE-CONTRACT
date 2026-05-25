@@ -1,0 +1,446 @@
+Excellent. This is the point where V3 stops being “a collection of systems” and becomes:
+
+# 🧱 A FORMAL EXECUTION MODEL
+
+We are now defining the actual language your engine speaks.
+
+Not code language.
+
+## Hunt language.
+
+And this next layer is the most important schema layer in the entire platform:
+
+# 👉 THE OFFICIAL NODE CONTRACT (V2)
+
+This contract must survive:
+
+* runtime growth
+* creator tooling
+* save systems
+* future multiplayer
+* sponsor systems
+* AR/location systems
+* future rendering changes
+
+So we are going to make it intentionally modular.
+
+---
+
+# 🧠 CORE DESIGN PRINCIPLE
+
+A node should NOT represent:
+
+* a screen
+* a renderer
+* a gameplay mode
+
+A node should represent:
+
+# ✅ A UNIT OF GAMEPLAY PROGRESSION
+
+That’s the correct abstraction.
+
+---
+
+# 🧱 OFFICIAL NODE CONTRACT V2 (RECOMMENDED)
+
+This is the direction I recommend locking in.
+
+```json id="v2ehzj"
+{
+  "id": "node_001",
+
+  "interaction": "choice",
+
+  "presentation": "riddle",
+
+  "title": "The Forgotten Gate",
+
+  "body": "What walks on four legs in the morning?",
+
+  "assets": {
+    "backgroundImageId": "bg_ruins",
+    "audioId": "ambient_cave",
+    "iconId": "gate_icon"
+  },
+
+  "transitions": [],
+
+  "requirements": {
+    "items": [],
+    "flags": []
+  },
+
+  "effects": {
+    "onEnter": [],
+    "onExit": [],
+    "onComplete": [],
+    "onFail": []
+  },
+
+  "timer": {
+    "enabled": false,
+    "durationSeconds": 0,
+    "expireTransitionId": null
+  },
+
+  "checkpoint": {
+    "enabled": false
+  },
+
+  "sponsors": [],
+
+  "tracking": {
+    "allowRevisit": true,
+    "countVisit": true,
+    "countCompletion": true
+  },
+
+  "metadata": {}
+}
+```
+
+---
+
+# 🧠 THIS IS THE BIG EVOLUTION
+
+Notice what disappeared:
+
+❌ `type`
+
+That’s intentional.
+
+---
+
+# 🚨 WHY REMOVING `type` IS IMPORTANT
+
+Because node “types” become explosive over time.
+
+Instead, V3 should compose nodes from:
+
+| Concern        | Purpose                        |
+| -------------- | ------------------------------ |
+| `interaction`  | how player interacts           |
+| `presentation` | how content is visually framed |
+| `effects`      | runtime mutation               |
+| `transitions`  | progression flow               |
+| `requirements` | gating                         |
+| `assets`       | media                          |
+| `tracking`     | progression rules              |
+
+This is dramatically more scalable.
+
+---
+
+# 🧱 INTERACTION TYPES (CORE RUNTIME BEHAVIOR)
+
+These define gameplay mechanics.
+
+Recommended V1 interactions:
+
+```txt
+none
+choice
+input
+scan
+upload
+timer
+link
+map
+inventory
+```
+
+---
+
+# 🧠 EXAMPLES
+
+| Interaction | Meaning                  |
+| ----------- | ------------------------ |
+| `choice`    | choose from options      |
+| `input`     | type answer              |
+| `scan`      | QR/AR scanning           |
+| `upload`    | upload photo/media       |
+| `link`      | external navigation      |
+| `map`       | location/map interaction |
+| `inventory` | inventory management     |
+| `none`      | cinematic/story-only     |
+
+---
+
+# 🧱 PRESENTATION TYPES (UI / CONTENT FRAMING)
+
+These are PRESENTATIONAL ONLY.
+
+Recommended V1:
+
+```txt
+story
+riddle
+trivia
+portal
+gem
+checkpoint
+reward
+trap
+deadEnd
+end
+cinematic
+```
+
+---
+
+# 🧠 IMPORTANT DISTINCTION
+
+This means:
+
+## Example 1
+
+A trivia question could use:
+
+```json id="vjlwmx"
+{
+  "interaction": "choice",
+  "presentation": "trivia"
+}
+```
+
+OR
+
+```json id="0v8kdi"
+{
+  "interaction": "input",
+  "presentation": "trivia"
+}
+```
+
+WITHOUT needing:
+
+* `triviaChoiceNode`
+* `triviaInputNode`
+* `advancedTriviaNode`
+* etc.
+
+This prevents schema explosion.
+
+---
+
+# 🧱 TRANSITIONS CONTRACT (IMPORTANT)
+
+This becomes official progression routing.
+
+Recommended structure:
+
+```json id="v5w6ca"
+"transitions": [
+  {
+    "id": "transition_001",
+
+    "targetNodeId": "node_002",
+
+    "kind": "default",
+
+    "requirements": {
+      "items": [],
+      "flags": []
+    },
+
+    "effects": [],
+
+    "priority": 0,
+
+    "metadata": {}
+  }
+]
+```
+
+---
+
+# 🧠 WHY THIS IS HUGE
+
+Transitions become first-class systems.
+
+That enables:
+
+* hidden routes
+* map travel
+* portal animations
+* branching
+* lock/key systems
+* timed escape routes
+* multiplayer synchronization
+
+without redesign later.
+
+---
+
+# 🧱 REQUIREMENTS MODEL (OFFICIAL DIRECTION)
+
+We already decided:
+
+* structured
+* no freeform expressions
+
+Good.
+
+Recommended:
+
+```json id="mjtmwd"
+"requirements": {
+  "items": [
+    {
+      "itemId": "ruby_key",
+      "amount": 1
+    }
+  ],
+
+  "flags": [
+    {
+      "flagId": "intro_complete",
+      "operator": "==",
+      "value": true
+    }
+  ]
+}
+```
+
+---
+
+# 🧠 WHY THIS IS BETTER
+
+This supports:
+
+* validation
+* visual editors
+* creator friendliness
+* future logic builders
+
+without runtime scripting chaos.
+
+---
+
+# 🧱 EFFECTS CONTRACT (LOCK THIS)
+
+Official direction:
+
+```json id="t0wly0"
+{
+  "version": 1,
+
+  "type": "grantItem",
+
+  "payload": {
+    "itemId": "gold_coin",
+    "amount": 5
+  }
+}
+```
+
+---
+
+# 🧠 EFFECT EXECUTION PHASES
+
+You now officially support:
+
+| Phase        | Purpose            |
+| ------------ | ------------------ |
+| `onEnter`    | entering node      |
+| `onExit`     | leaving node       |
+| `onComplete` | solving/completing |
+| `onFail`     | failed interaction |
+
+This is clean and scalable.
+
+---
+
+# 🧱 TIMER MODEL
+
+Official direction:
+
+```json id="3u6uxf"
+"timer": {
+  "enabled": true,
+  "durationSeconds": 60,
+  "expireTransitionId": "transition_fail"
+}
+```
+
+---
+
+# 🧠 IMPORTANT DECISION
+
+Notice:
+
+* timer does NOT directly jump nodes
+* timer triggers transitions
+
+That’s architecturally cleaner.
+
+---
+
+# 🧱 TRACKING MODEL
+
+This is subtle but important.
+
+```json id="8mkt0k"
+"tracking": {
+  "allowRevisit": true,
+  "countVisit": true,
+  "countCompletion": true
+}
+```
+
+This supports:
+
+* analytics
+* achievements
+* hidden routes
+* replay systems
+* creator metrics
+
+later.
+
+---
+
+# 🚨 MOST IMPORTANT THING YOU SHOULD UNDERSTAND
+
+At this point:
+
+# The runtime is no longer the primary system.
+
+The schema is.
+
+That’s the evolution you’ve reached.
+
+Your engine now becomes:
+
+* runtime interpreter
+* schema executor
+* creator-authored progression engine
+
+---
+
+# 🚀 WHAT COMES NEXT (AFTER THIS)
+
+Once you approve this direction, next layer becomes:
+
+# 👉 OFFICIAL HUNT CONTRACT V2
+
+Meaning:
+
+* hunt metadata
+* global systems
+* asset registries
+* item registries
+* reward registries
+* sponsor attachment
+* theme bindings
+* session configuration
+* save compatibility
+
+And THEN:
+
+* validator
+* loader
+* creator serialization
+* graph editor
+  become straightforward engineering tasks instead of design problems.
