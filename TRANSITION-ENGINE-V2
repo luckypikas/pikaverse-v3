@@ -1,0 +1,442 @@
+Good. This is the last foundational engine layer.
+
+After this, your system is no longer “a framework in pieces” — it becomes a **fully deterministic navigation engine for interactive worlds**.
+
+---
+
+# 🧠 TRANSITION ENGINE V2 (OFFICIAL DESIGN)
+
+This system controls:
+
+> how the player moves from one node to another — and *why*
+
+It is the bridge between:
+
+* node definitions
+* player decisions
+* timers
+* effects
+* failure states
+* runtime history
+
+---
+
+# 🚨 CORE PRINCIPLE
+
+## ❌ Nodes do NOT decide navigation directly
+
+## ❌ Effects do NOT move the player
+
+## ❌ UI does NOT control flow
+
+## ✅ The Transition Engine is the ONLY authority on movement
+
+Everything else *requests*, it decides.
+
+---
+
+# 🧱 TRANSITION ENGINE HAS 4 STAGES
+
+```txt id="tr0"
+INPUT → EVALUATE → RESOLVE → EXECUTE
+```
+
+---
+
+# 🥇 1. TRANSITION INPUT
+
+Triggered by:
+
+* player choice click
+* node auto-next
+* timer expiration
+* fail condition
+* effect-triggered jump (rare, controlled)
+
+Example input:
+
+```json id="tr1"
+{
+  "type": "choice",
+  "fromNodeId": "puzzle_001",
+  "choiceId": "choice_echo"
+}
+```
+
+or:
+
+```json id="tr2"
+{
+  "type": "timer_expired",
+  "nodeId": "puzzle_001"
+}
+```
+
+---
+
+# 🥈 2. EVALUATION LAYER (GUARD CHECKS)
+
+This is where decisions are validated.
+
+## Checks:
+
+### ✔ Node exists
+
+### ✔ Choice exists (if applicable)
+
+### ✔ Requirements satisfied
+
+### ✔ Flags valid
+
+### ✔ Inventory conditions met
+
+### ✔ Fail conditions checked first
+
+---
+
+## 🧠 ORDER OF EVALUATION
+
+This order is critical:
+
+```txt id="tr3"
+1. Fail conditions
+2. Requirements
+3. Choice validity
+4. Default transitions
+```
+
+---
+
+## Example FAIL OVERRIDE:
+
+If node has:
+
+```json id="tr4"
+"failNodeId": "trap_001"
+```
+
+AND conditions fail → override all transitions.
+
+---
+
+# 🥉 3. TRANSITION RESOLUTION
+
+Now we determine:
+
+> WHERE DO WE GO?
+
+We resolve in this priority order:
+
+---
+
+## 🧭 PRIORITY ORDER
+
+### 1. Choice-based transition
+
+```json id="tr5"
+choice.next
+```
+
+---
+
+### 2. Node.next (linear flow)
+
+```json id="tr6"
+"next": "portal_001"
+```
+
+---
+
+### 3. Fail node
+
+```json id="tr7"
+"failNodeId": "deadEnd_001"
+```
+
+---
+
+### 4. Timer expiration node
+
+```json id="tr8"
+timer.onExpireNodeId
+```
+
+---
+
+### 5. System fallback
+
+* stay on node
+* or go to safe fallback node
+
+---
+
+# 🏁 4. TRANSITION EXECUTION
+
+Once resolved:
+
+```txt id="tr9"
+Exit current node
+→ run onExit effects
+→ apply state updates
+→ switch active node
+→ run onEnter effects
+→ record history
+→ render
+```
+
+---
+
+# 🧱 OFFICIAL TRANSITION OBJECT
+
+We formalize transitions as first-class objects:
+
+```json id="tr10"
+{
+  "from": "puzzle_001",
+  "to": "end_001",
+  "reason": "choice",
+  "trigger": "choice_echo",
+  "timestamp": 123456
+}
+```
+
+---
+
+# 🧠 TRANSITION TYPES (CANONICAL SET)
+
+## 1. Choice Transition
+
+Player selects option
+
+```txt id="tr11"
+choice_click
+```
+
+---
+
+## 2. Linear Transition
+
+Automatic flow
+
+```txt id="tr12"
+auto_next
+```
+
+---
+
+## 3. Timer Transition
+
+Time-based navigation
+
+```txt id="tr13"
+timer_expired
+```
+
+---
+
+## 4. Fail Transition
+
+Requirements failed
+
+```txt id="tr14"
+fail_condition
+```
+
+---
+
+## 5. Effect Transition (controlled)
+
+Special scripted jumps
+
+```txt id="tr15"
+effect_triggered_jump
+```
+
+⚠️ Must be explicitly allowed in schema rules.
+
+---
+
+# 🧱 TRANSITION GUARD SYSTEM (VERY IMPORTANT)
+
+Before ANY transition executes:
+
+## Guards run:
+
+### ✔ CanLeaveNode(node)
+
+* prevents illegal exits
+
+### ✔ CanEnterNode(node)
+
+* checks requirements again (double safety)
+
+### ✔ CanTransition(from → to)
+
+* ensures graph validity
+
+---
+
+# 🧠 WHY DOUBLE VALIDATION MATTERS
+
+Because creators will build:
+
+* loops
+* traps
+* conditional puzzles
+* broken paths intentionally or accidentally
+
+So the engine must be:
+
+> forgiving at input, strict at execution
+
+---
+
+# 🧱 TRANSITION + EFFECT INTEGRATION
+
+This is the key system interaction:
+
+## EXIT PHASE
+
+```txt id="tr16"
+run onExit effects
+```
+
+## SWITCH PHASE
+
+```txt id="tr17"
+change active node
+```
+
+## ENTER PHASE
+
+```txt id="tr18"
+run onEnter effects
+```
+
+---
+
+# 🧠 CRITICAL DESIGN RULE
+
+## Effects NEVER decide transitions
+
+Instead:
+
+* effects can SET FLAGS
+* transitions READ FLAGS
+
+Example:
+
+```txt id="tr19"
+Effect → setFlag("door_open")
+Transition → checks flag → allows movement
+```
+
+This prevents chaos.
+
+---
+
+# 🧱 TRANSITION HISTORY (REQUIRED)
+
+We now log every move:
+
+```json id="tr20"
+{
+  "from": "start_001",
+  "to": "puzzle_001",
+  "reason": "auto_next",
+  "context": {
+    "choiceId": null,
+    "flagState": {},
+    "inventoryState": {}
+  }
+}
+```
+
+This enables:
+
+* replay system
+* debugging tools
+* analytics
+* creator simulation mode
+
+---
+
+# 🧠 FINAL ENGINE FLOW (COMPLETE SYSTEM)
+
+Now your full runtime loop is:
+
+```txt id="tr21"
+INPUT EVENT
+   ↓
+TRANSITION ENGINE
+   ↓
+EVALUATION
+   ↓
+RESOLUTION
+   ↓
+EXIT NODE
+   ↓
+EFFECT EXECUTION (onExit)
+   ↓
+STATE UPDATE
+   ↓
+NODE SWITCH
+   ↓
+EFFECT EXECUTION (onEnter)
+   ↓
+RENDER
+   ↓
+LOG HISTORY
+```
+
+---
+
+# 🚨 WHAT YOU JUST ACHIEVED
+
+At this point, V3 now has:
+
+## ✔ Data Contract (Hunt Schema)
+
+## ✔ Execution Model (Nodes)
+
+## ✔ Mutation System (Effects Engine)
+
+## ✔ Navigation System (Transition Engine)
+
+## ✔ State Model (Runtime Context)
+
+## ✔ Registry System (Resolution Layer)
+
+## ✔ Validation Pipeline (Boot Safety)
+
+This is no longer “a game system”.
+
+It is:
+
+# 🧠 A GENERAL INTERACTIVE WORLD ENGINE
+
+---
+
+# 🚀 NEXT STEP (IMPORTANT SHIFT)
+
+Now we move out of engine design and into:
+
+# 👉 CREATOR RUNTIME LAYER (DASHBOARD ENGINE INTEGRATION)
+
+This is where we define:
+
+* node editor behavior
+* live simulation mode
+* asset picker integration
+* effect builder UI
+* transition visualization graph
+* debugging inspector
+* save/export pipeline
+
+This is where your “creator-first platform” actually becomes real.
+
+---
+
+If you’re ready, next step is:
+
+# 🧱 CREATOR ENGINE LAYER (V1 DASHBOARD ARCHITECTURE)
