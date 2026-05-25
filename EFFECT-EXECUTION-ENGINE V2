@@ -1,0 +1,426 @@
+Good. This is the layer where your engine stops being “structured data execution” and becomes a **real deterministic simulation system**.
+
+If you get this right, everything else (creator tools, node editor, sponsors, inventory UI) becomes predictable.
+
+---
+
+# 🧠 EFFECT EXECUTION ENGINE V2 (OFFICIAL DESIGN)
+
+We are defining:
+
+> how all gameplay changes actually happen in a safe, consistent, replayable way
+
+---
+
+# 🚨 CORE PRINCIPLE (NON-NEGOTIABLE)
+
+## ❌ Effects do NOT directly mutate state
+
+## ✅ Effects are *instructions* sent to a controlled state reducer
+
+Meaning:
+
+```txt id="e0x1"
+Effect → Effect Queue → Reducer → State Update
+```
+
+NOT:
+
+```txt id="e0x2"
+Effect → Direct Mutation (BAD)
+```
+
+---
+
+# 🧱 THE EFFECT SYSTEM HAS 4 LAYERS
+
+This is your real engine:
+
+---
+
+## 🥇 1. EFFECT DEFINITION (DATA)
+
+Example:
+
+```json id="fx1"
+{
+  "type": "grantItem",
+  "payload": {
+    "itemId": "ruby_key",
+    "amount": 1
+  }
+}
+```
+
+This is PURE data.
+
+No logic here.
+
+---
+
+## 🥈 2. EFFECT QUEUE (TEMPORARY BUFFER)
+
+When gameplay happens:
+
+```txt id="fxq1"
+node enters → effects collected → queued
+```
+
+Structure:
+
+```js id="eq1"
+effectQueue = [
+  effect1,
+  effect2,
+  effect3
+]
+```
+
+Why this matters:
+
+* ordering
+* debugging
+* replay systems
+* multiplayer sync later
+* deterministic execution
+
+---
+
+## 🥉 3. EFFECT RESOLVER (VALIDATION + NORMALIZATION)
+
+Before execution:
+
+Each effect is:
+
+* validated
+* normalized
+* resolved against registries
+
+Example:
+
+```txt id="fxr1"
+itemId → ItemRegistry lookup
+```
+
+If invalid:
+
+* warn
+* skip safely
+* never crash runtime
+
+---
+
+## 🏁 4. STATE REDUCER (THE ONLY MUTATION POINT)
+
+This is the MOST important part.
+
+All state changes go through ONE function:
+
+```txt id="sr1"
+applyEffect(state, effect) → newState
+```
+
+---
+
+# 🧱 OFFICIAL EFFECT TYPES (V2 STANDARD)
+
+We now define the canonical system.
+
+---
+
+## 🎒 INVENTORY EFFECTS
+
+### Grant Item
+
+```json id="fx_inv1"
+{
+  "type": "grantItem",
+  "payload": {
+    "itemId": "ruby_key",
+    "amount": 1
+  }
+}
+```
+
+### Remove Item
+
+```json id="fx_inv2"
+{
+  "type": "removeItem",
+  "payload": {
+    "itemId": "ruby_key",
+    "amount": 1
+  }
+}
+```
+
+---
+
+## 🏳️ FLAG EFFECTS
+
+### Set Flag
+
+```json id="fx_flag1"
+{
+  "type": "setFlag",
+  "payload": {
+    "flagId": "intro_complete",
+    "value": true
+  }
+}
+```
+
+---
+
+## 📊 STAT EFFECTS
+
+### Increment Stat
+
+```json id="fx_stat1"
+{
+  "type": "incrementStat",
+  "payload": {
+    "statId": "score",
+    "value": 100
+  }
+}
+```
+
+---
+
+## 🎁 REWARD EFFECTS
+
+### Grant Reward
+
+```json id="fx_reward1"
+{
+  "type": "grantReward",
+  "payload": {
+    "rewardId": "reward_001"
+  }
+}
+```
+
+---
+
+## 🔊 AUDIO / VISUAL EFFECTS (NON-STATE)
+
+These do NOT mutate state.
+
+They are “side effects only”.
+
+```json id="fx_ui1"
+{
+  "type": "playSound",
+  "payload": {
+    "audioId": "portal_whoosh"
+  }
+}
+```
+
+```json id="fx_ui2"
+{
+  "type": "showPopup",
+  "payload": {
+    "title": "Unlocked!",
+    "body": "You found the hidden path."
+  }
+}
+```
+
+---
+
+# 🧠 CRITICAL ARCHITECTURE DECISION
+
+We now separate effects into:
+
+## 1. STATE EFFECTS (deterministic)
+
+* inventory
+* flags
+* stats
+* rewards
+
+## 2. SIDE EFFECTS (non-deterministic UI/audio)
+
+* sound
+* animation
+* popup
+* cinematic triggers
+
+---
+
+# 🧱 EFFECT EXECUTION FLOW (OFFICIAL)
+
+```txt id="flow1"
+Enter Node
+  ↓
+Collect effects (onEnter)
+  ↓
+Queue effects
+  ↓
+Resolve effects
+  ↓
+Split effects:
+    ├── State Effects → Reducer
+    └── Side Effects → UI Layer
+  ↓
+Apply State Updates
+  ↓
+Persist Runtime State
+```
+
+---
+
+# 🧱 STATE REDUCER DESIGN (CORE ENGINE)
+
+This is your central mutation engine:
+
+```js id="reducer1"
+function applyEffect(state, effect) {
+
+  switch(effect.type) {
+
+    case "grantItem":
+      state.inventory[effect.payload.itemId] =
+        (state.inventory[effect.payload.itemId] || 0)
+        + effect.payload.amount;
+      break;
+
+    case "setFlag":
+      state.flags[effect.payload.flagId] =
+        effect.payload.value;
+      break;
+
+    case "incrementStat":
+      state.stats[effect.payload.statId] =
+        (state.stats[effect.payload.statId] || 0)
+        + effect.payload.value;
+      break;
+
+    case "grantReward":
+      state.rewards[effect.payload.rewardId] = {
+        claimed: true,
+        timestamp: Date.now()
+      };
+      break;
+  }
+
+  return state;
+}
+```
+
+---
+
+# 🧠 WHY THIS IS IMPORTANT
+
+This guarantees:
+
+## ✔ Deterministic gameplay
+
+Same inputs → same results
+
+## ✔ Debuggability
+
+You can replay effect history
+
+## ✔ Multiplayer readiness
+
+State sync becomes trivial later
+
+## ✔ Creator safety
+
+No arbitrary code execution
+
+## ✔ Tooling compatibility
+
+Dashboard can simulate effects safely
+
+---
+
+# 🧱 EFFECT HISTORY (VERY IMPORTANT NEXT STEP)
+
+You SHOULD record:
+
+```js id="hist1"
+effectHistory = []
+```
+
+Each entry:
+
+```json id="hist2"
+{
+  "nodeId": "puzzle_001",
+  "effect": {},
+  "timestamp": 123456
+}
+```
+
+This enables:
+
+* replay system
+* debugging inspector
+* analytics
+* AI-assisted creator tools later
+
+---
+
+# 🚨 IMPORTANT DESIGN RULE
+
+## Effects are NEVER allowed to:
+
+* directly change node graph
+* modify hunt structure
+* mutate registries
+* mutate assets
+
+They ONLY affect runtime state.
+
+---
+
+# 🧠 WHERE THIS CONNECTS TO YOUR SYSTEM
+
+Now everything aligns:
+
+| Layer           | Purpose             |
+| --------------- | ------------------- |
+| Hunt Contract   | structure           |
+| Node Contract   | behavior definition |
+| Runtime State   | truth               |
+| Registry System | resolution          |
+| Effect Engine   | mutation            |
+| Renderer        | presentation        |
+
+This is a complete engine stack.
+
+---
+
+# 🚀 WHAT COMES NEXT (FINAL CORE ENGINE LAYER)
+
+You are now ready for the last foundational system:
+
+# 👉 TRANSITION ENGINE (V2)
+
+This defines:
+
+* how nodes move
+* how conditions evaluate
+* how branching resolves
+* how timers trigger navigation
+* how fail states work
+* how history is recorded
+
+Once that is done, V3 is structurally complete at the engine level.
+
+Then we move into:
+
+* creator dashboard wiring
+* node editor logic
+* asset picker UI
+* live simulation tools
+
+---
+
+If you’re ready, next step is:
+
+# 🧱 TRANSITION ENGINE (THE FINAL CORE SYSTEM)
