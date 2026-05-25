@@ -1,0 +1,481 @@
+Good. This is the layer that turns V3 from a “powerful editor” into a **real platform that can survive time, updates, and scale**.
+
+We’re defining how hunts are:
+
+* saved
+* versioned
+* migrated
+* published
+* restored
+* diffed
+
+---
+
+# 🧱 HUNT PERSISTENCE + VERSIONING ENGINE (FINAL PLATFORM LAYER)
+
+## 🧠 CORE IDEA
+
+A hunt is not a file.
+
+It is:
+
+# a versioned data lineage graph over time
+
+Meaning:
+
+* every change has history
+* every published state is immutable
+* every schema upgrade is traceable
+
+---
+
+# 🧱 1. THREE-LAYER STORAGE MODEL
+
+```txt id="pv0"
+DRAFT STATE  →  WORKING EDITABLE VERSION
+PUBLISHED    →  IMMUTABLE PLAYER VERSION
+ARCHIVE      →  HISTORY / SNAPSHOTS
+```
+
+---
+
+## 🟡 DRAFT STATE (CREATOR WORKSPACE)
+
+* constantly changing
+* autosaved
+* unsafe by design
+* supports undo/redo
+
+Stored as:
+
+```json id="pv1"
+{
+  "huntId": "demo",
+  "version": "draft",
+  "state": { }
+}
+```
+
+---
+
+## 🟢 PUBLISHED STATE (PLAYER RUNTIME)
+
+* frozen snapshot
+* cannot be mutated
+* used by GameRuntime only
+
+```json id="pv2"
+{
+  "huntId": "demo",
+  "version": 3,
+  "publishedAt": 1710000000,
+  "state": { }
+}
+```
+
+---
+
+## 🔵 ARCHIVE STATE (HISTORY)
+
+* all previous versions
+* used for rollback, comparison, audit
+
+```json id="pv3"
+{
+  "huntId": "demo",
+  "versions": [1, 2, 3]
+}
+```
+
+---
+
+# 🧱 2. VERSION MODEL (CORE RULE)
+
+Every publish increments version:
+
+```txt id="pv4"
+draft → publish → v1
+draft → publish → v2
+draft → publish → v3
+```
+
+---
+
+## 🧠 RULE
+
+## Published hunts are immutable forever
+
+No edits. No exceptions.
+
+Only:
+
+* clone
+* fork
+* new version
+
+---
+
+# 🧱 3. SAVE SYSTEM (COMMAND-BASED PERSISTENCE)
+
+All persistence is driven by your command system.
+
+---
+
+## AUTO-SAVE COMMAND
+
+```json id="pv5"
+{
+  "type": "persist.autosave",
+  "payload": {
+    "huntId": "demo",
+    "state": "draft"
+  }
+}
+```
+
+Triggered every:
+
+* node edit
+* edge change
+* asset assignment
+* effect update
+
+---
+
+## MANUAL SAVE (FORCED SNAPSHOT)
+
+```json id="pv6"
+{
+  "type": "persist.saveSnapshot",
+  "payload": {
+    "label": "before boss redesign"
+  }
+}
+```
+
+---
+
+# 🧱 4. PUBLISH PIPELINE (CRITICAL FLOW)
+
+This is your “launch button”.
+
+---
+
+## FLOW:
+
+```txt id="pv7"
+Validate Draft
+   ↓
+Run Schema Migration Check
+   ↓
+Freeze State Snapshot
+   ↓
+Assign Version Number
+   ↓
+Store in Published Registry
+   ↓
+Lock Runtime Input
+```
+
+---
+
+## PUBLISH COMMAND
+
+```json id="pv8"
+{
+  "type": "persist.publish",
+  "payload": {
+    "huntId": "demo",
+    "notes": "First playable version"
+  }
+}
+```
+
+---
+
+# 🧱 5. SCHEMA VERSIONING SYSTEM (VERY IMPORTANT)
+
+This is what protects you long-term.
+
+---
+
+## SCHEMA VERSION TRACKING
+
+```json id="pv9"
+{
+  "huntSchemaVersion": 1,
+  "engineVersion": "V3.0.0"
+}
+```
+
+---
+
+## WHY THIS MATTERS
+
+When you evolve the engine:
+
+* nodes change shape
+* effects expand
+* rules evolve
+
+Without versioning → old hunts break
+
+---
+
+# 🧱 6. MIGRATION ENGINE (CRITICAL FUTURE SAFETY SYSTEM)
+
+When schema updates happen:
+
+---
+
+## MIGRATION FLOW:
+
+```txt id="pv10"
+oldVersion → migration function → newVersion
+```
+
+---
+
+## EXAMPLE:
+
+```js id="pv11"
+function migrate_v1_to_v2(hunt) {
+  return {
+    ...hunt,
+    nodes: migrateNodes(hunt.nodes)
+  };
+}
+```
+
+---
+
+## RULE
+
+Every schema change MUST include:
+
+* migration function
+* backward compatibility path
+
+---
+
+# 🧱 7. DIFF SYSTEM (POWERFUL CREATOR FEATURE)
+
+Used for:
+
+* version comparison
+* undo auditing
+* collaboration
+
+---
+
+## DIFF MODEL:
+
+```json id="pv12"
+{
+  "added": [],
+  "removed": [],
+  "modified": []
+}
+```
+
+---
+
+## EXAMPLE USE CASE
+
+* “What changed since last publish?”
+* “Why did this node break?”
+* “Compare version 2 vs 3”
+
+---
+
+# 🧱 8. CLONE / FORK SYSTEM
+
+Creators never overwrite published hunts.
+
+They:
+
+## CLONE → new draft
+
+```json id="pv13"
+{
+  "type": "persist.clone",
+  "payload": {
+    "fromVersion": 3,
+    "newHuntId": "demo-fork"
+  }
+}
+```
+
+---
+
+# 🧱 9. RECOVERY SYSTEM (CRASH SAFETY)
+
+Auto-recovery from draft snapshots:
+
+* last valid state
+* last autosave
+* last command batch
+
+---
+
+## RULE
+
+No creator work is ever lost.
+
+---
+
+# 🧱 10. STORAGE TARGETS (IMPLEMENTATION FLEXIBILITY)
+
+This layer supports:
+
+* localStorage (dev)
+* IndexedDB (editor)
+* file export (.hunt.json)
+* cloud DB (future multiplayer)
+
+---
+
+## STORAGE INTERFACE
+
+```js id="pv14"
+interface HuntStorage {
+  saveDraft(huntId, state)
+  loadDraft(huntId)
+  publish(huntId)
+  loadPublished(huntId, version)
+  listVersions(huntId)
+}
+```
+
+---
+
+# 🧠 CRITICAL ARCHITECTURAL INSIGHT
+
+You now have:
+
+## BEFORE
+
+“save file”
+
+## NOW
+
+# versioned simulation lineage system
+
+This is what separates:
+
+* tools (Unity editor level)
+  from
+* platforms (Unreal + Roblox Studio level)
+
+---
+
+# 🧱 FINAL SYSTEM RELATIONSHIP MAP
+
+```txt id="pv15"
+Creator UI
+   ↓
+Command System
+   ↓
+Draft State
+   ↓
+Validation Layer
+   ↓
+Persistence Engine
+   ↓
+Version Store
+   ↓
+Published Runtime Input
+   ↓
+GameRuntime
+```
+
+---
+
+# 🚀 WHAT YOU NOW HAVE (FULL V3 PLATFORM COMPLETE)
+
+You now have the full architecture:
+
+---
+
+## 🧠 ENGINE CORE
+
+* nodes
+* transitions
+* effects
+* runtime state
+* registries
+
+## 🧪 OBSERVABILITY
+
+* inspector system
+* event stream
+* snapshot system
+
+## 🎨 CREATOR SYSTEM
+
+* graph engine
+* asset system
+* effect builder
+* simulation mode
+
+## 🧱 UI PLATFORM
+
+* workspace system
+* docking system
+* tool registry
+
+## 🧾 CONTROL LAYER
+
+* command system
+* validation pipeline
+* undo/redo
+
+## 💾 PERSISTENCE LAYER (JUST BUILT)
+
+* draft system
+* publish system
+* versioning
+* migration engine
+* diff system
+* clone/fork system
+
+---
+
+# 🧠 FINAL RESULT
+
+You are no longer building a game engine.
+
+You are building:
+
+# a versioned, observable, simulation-based world-building platform
+
+---
+
+# 🚀 FINAL QUESTION (IMPORTANT TURNING POINT)
+
+At this point, there are only two directions left:
+
+### 1. IMPLEMENTATION PHASE
+
+We turn all of this into:
+
+* real folder structure
+* real files
+* real APIs
+* real runtime wiring
+
+### 2. PRODUCTIZATION PHASE
+
+We define:
+
+* onboarding flow
+* creator UX polish
+* templates
+* marketplace structure
+* monetization layer
+
+---
+
+If you're ready, next step is your choice:
+
+# 👉 “TURN V3 INTO A REAL CODEBASE ARCHITECTURE (FOLDER + FILE SYSTEM DESIGN)”
