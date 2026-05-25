@@ -1,0 +1,385 @@
+Perfect. Those six decisions lock the *behavioral foundation* of V3.
+
+And importantly: they are all scalable choices without being prematurely enterprise-heavy.
+
+You just defined the long-term shape of:
+
+* saves
+* progression
+* multiplayer compatibility
+* creator tooling
+* rewards
+* economy systems
+* live event systems
+* sponsor systems
+
+Now we can stop theorizing and start formalizing.
+
+---
+
+# 🧱 V3 CANONICAL RUNTIME STATE CONTRACT (LOCKED DIRECTION)
+
+This is now the backbone the runtime, creator dashboard, save system, and future networking all revolve around.
+
+---
+
+# 🧠 CORE PRINCIPLE
+
+Runtime state should contain:
+
+## ONLY
+
+* gameplay truth
+* progression truth
+* persistent session truth
+
+## NEVER
+
+* UI state
+* DOM state
+* overlay visibility
+* animation state
+* transition visuals
+
+That separation is critical.
+
+---
+
+# ✅ OFFICIAL V3 RUNTIME STATE SHAPE (RECOMMENDED)
+
+```json id="6b8mnq"
+{
+  "schemaVersion": 1,
+
+  "huntId": "demo-hunt",
+
+  "session": {
+    "id": "session_001",
+    "teamName": "Night Hunters",
+    "createdAt": 0,
+    "updatedAt": 0
+  },
+
+  "progress": {
+    "currentNodeId": "start_001",
+    "visitedNodes": [],
+    "completedNodes": [],
+    "history": []
+  },
+
+  "inventory": {
+    "gold_coin": 14,
+    "ruby_key": 1
+  },
+
+  "flags": {
+    "intro_complete": true,
+    "reputation": 12,
+    "difficulty_modifier": 1.25
+  },
+
+  "stats": {
+    "score": 0,
+    "deaths": 0,
+    "mistakes": 0,
+    "hintsUsed": 0
+  },
+
+  "timers": {
+    "global": {
+      "startedAt": 0,
+      "duration": 0
+    },
+
+    "node": {
+      "startedAt": 0,
+      "duration": 0
+    }
+  },
+
+  "rewards": {
+    "reward_001": {
+      "claimed": true,
+      "claimedAt": 0
+    }
+  },
+
+  "checkpoints": [],
+
+  "metadata": {}
+}
+```
+
+---
+
+# 🧠 WHY THIS STRUCTURE IS CORRECT
+
+This structure separates runtime concerns into stable domains:
+
+| Domain        | Responsibility             |
+| ------------- | -------------------------- |
+| `session`     | team/session identity      |
+| `progress`    | navigation + traversal     |
+| `inventory`   | quantity-based resources   |
+| `flags`       | dynamic world state        |
+| `stats`       | analytics/scoring          |
+| `timers`      | runtime timing systems     |
+| `rewards`     | reward ownership lifecycle |
+| `checkpoints` | recovery/rollback          |
+| `metadata`    | extensibility              |
+
+This is a proper engine-state model now.
+
+---
+
+# 🔥 IMPORTANT CORRECTIONS TO EARLIER SCHEMA
+
+Now that your direction is locked, we should officially refine several earlier decisions.
+
+---
+
+# ✅ CHANGE 1 — `nodes` SHOULD BECOME ARRAYS
+
+Earlier proposal:
+
+```json id="jmlupx"
+"nodes": {
+  "start_001": {}
+}
+```
+
+Recommended:
+
+```json id="nh7hbd"
+"nodes": [
+  {}
+]
+```
+
+Reason:
+
+* graph editor compatibility
+* ordering
+* drag/drop
+* serialization stability
+* future collaborative editing
+
+Runtime builds lookup maps internally.
+
+---
+
+# ✅ CHANGE 2 — REPLACE `next` WITH `transitions`
+
+This is a major improvement.
+
+Instead of:
+
+```json id="5a7e2z"
+"next": "portal_001"
+```
+
+Use:
+
+```json id="5j0k4h"
+"transitions": [
+  {
+    "id": "transition_001",
+    "targetNodeId": "portal_001",
+    "kind": "default"
+  }
+]
+```
+
+---
+
+# 🧠 WHY THIS MATTERS
+
+Because later this supports:
+
+* cinematic transitions
+* portal transitions
+* map travel
+* conditions
+* branching
+* timed routing
+* hidden routes
+* multiplayer synchronization
+
+without redesigning the schema.
+
+Huge upgrade.
+
+---
+
+# ✅ CHANGE 3 — REMOVE FREEFORM EXPRESSIONS (FOR NOW)
+
+REMOVE:
+
+```json id="1jwmrq"
+"expression": ""
+```
+
+from requirements.
+
+Structured conditions are safer.
+
+Use:
+
+```json id="m4w6gm"
+"requirements": {
+  "items": [],
+  "flags": []
+}
+```
+
+V1 should prioritize:
+
+* predictability
+* validation
+* creator clarity
+
+NOT arbitrary scripting.
+
+---
+
+# ✅ CHANGE 4 — EFFECTS REQUIRE VERSIONING
+
+Official effect contract direction:
+
+```json id="p1vqlv"
+{
+  "version": 1,
+  "type": "grantItem",
+  "payload": {
+    "itemId": "ruby_key",
+    "amount": 1
+  }
+}
+```
+
+---
+
+# 🧠 WHY THIS IS BETTER
+
+This gives:
+
+* migration safety
+* extensibility
+* validator compatibility
+* tooling compatibility
+
+And payload separation keeps effect handlers clean.
+
+---
+
+# 🚨 MOST IMPORTANT NEW ARCHITECTURAL RECOMMENDATION
+
+This is the next huge refinement.
+
+---
+
+# 🧱 SEPARATE:
+
+# INTERACTION
+
+from
+
+# PRESENTATION
+
+This is critical before node count explodes.
+
+---
+
+# ❌ CURRENT THINKING
+
+```json id="5n5iv4"
+"type": "riddle"
+```
+
+This mixes:
+
+* UI
+* interaction
+* runtime behavior
+* content semantics
+
+into one field.
+
+That becomes dangerous later.
+
+---
+
+# ✅ BETTER DIRECTION
+
+Example:
+
+```json id="nmepz4"
+{
+  "interaction": "choice",
+  "presentation": "riddle"
+}
+```
+
+OR
+
+```json id="z1ml6w"
+{
+  "interaction": "input",
+  "presentation": "trivia"
+}
+```
+
+---
+
+# 🧠 WHY THIS MATTERS
+
+Because later:
+
+* riddles
+* trivia
+* story
+* sponsor prompts
+* AR clues
+
+may ALL use:
+
+* choice interaction
+* input interaction
+* scan interaction
+* upload interaction
+
+without needing endless node subclasses.
+
+This is one of the most important future-proofing decisions you can make right now.
+
+---
+
+# 🚀 HERE IS THE CORRECT NEXT STEP
+
+Now that runtime state direction is locked:
+
+# 👉 NEXT = DEFINE THE OFFICIAL NODE CONTRACT V2
+
+Meaning we now formalize:
+
+* node identity
+* transitions
+* requirements
+* effects
+* interaction model
+* presentation model
+* asset references
+* timers
+* checkpoints
+* sponsor attachment
+* metadata boundaries
+
+This becomes the true executable schema layer.
+
+And after THAT:
+
+* validator
+* loader
+* dashboard serialization
+* node editor
+  all become straightforward.
