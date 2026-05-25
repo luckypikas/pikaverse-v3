@@ -1,0 +1,407 @@
+Good. Now we shift from **engine design** into the thing that actually makes this a *platform*:
+
+# 🧱 CREATOR ENGINE LAYER (V1 DASHBOARD ARCHITECTURE)
+
+This is where V3 stops being “a playable system” and becomes:
+
+> a tool people use to build playable systems
+
+---
+
+# 🧠 CORE PRINCIPLE
+
+## The Creator Dashboard is NOT a UI on top of the engine.
+
+It is:
+
+# a controlled simulation layer of the same engine
+
+Meaning:
+
+* same contracts
+* same validation
+* same registries
+* same effect system
+* same transition engine
+
+Just running in **edit mode instead of play mode**
+
+---
+
+# 🧱 TWO MODES OF THE SAME ENGINE
+
+```txt id="cr0"
+            V3 ENGINE CORE
+         ┌───────────────────┐
+         │                   │
+   PLAY  │   Runtime Mode    │  PLAYERS
+         │                   │
+         ├───────────────────┤
+   EDIT  │  Creator Mode     │  BUILDERS
+         │                   │
+         └───────────────────┘
+```
+
+---
+
+# 🚨 CRITICAL RULE
+
+## ❌ Do NOT build a separate system for creators
+
+## ✅ Build a second execution mode for the same system
+
+This is what keeps V3 stable long-term.
+
+---
+
+# 🧱 CREATOR ENGINE STACK
+
+We now define 5 core subsystems:
+
+---
+
+# 🥇 1. CREATOR STATE WRAPPER
+
+This wraps runtime state with edit capabilities.
+
+```txt id="cr1"
+runtimeState + edit metadata + preview hooks
+```
+
+It enables:
+
+* undo/redo
+* live preview
+* temporary edits
+* draft vs published state
+
+---
+
+## 🧠 KEY IDEA
+
+Creators do NOT mutate the live hunt.
+
+They mutate a:
+
+# 🟡 “DRAFT HUNT STATE”
+
+Only published hunts become immutable runtime input.
+
+---
+
+# 🥈 2. LIVE SIMULATION ENGINE (CRITICAL)
+
+This is your killer feature.
+
+Creators can:
+
+* click node
+* simulate transitions
+* see effects run
+* preview inventory changes
+* test timers
+* debug branches
+
+WITHOUT leaving editor.
+
+---
+
+## FLOW:
+
+```txt id="cr2"
+Creator clicks node
+   ↓
+Transition Engine (sim mode)
+   ↓
+Effect Engine (sim mode)
+   ↓
+State preview updated
+   ↓
+UI updates instantly
+```
+
+Same engine. Different mode.
+
+---
+
+# 🥉 3. NODE EDITOR BINDING SYSTEM
+
+This is where UI connects to schema.
+
+Each node editor panel maps directly to:
+
+```json id="cr3"
+node {
+  type
+  title
+  body
+  requirements
+  effects
+  transitions
+}
+```
+
+---
+
+## 🧠 RULE
+
+### UI does NOT “own logic”
+
+It only edits schema fields.
+
+So:
+
+* inputs → schema
+* schema → engine
+* engine → preview
+
+Never UI → runtime directly.
+
+---
+
+# 🧱 4. ASSET PICKER SYSTEM (YOU ASKED FOR THIS EARLIER)
+
+This is now fully integrated.
+
+---
+
+## FLOW:
+
+```txt id="cr4"
+Click "Select Background"
+   ↓
+AssetRegistry Browser opens
+   ↓
+Filter by type (image/sound/etc)
+   ↓
+Select assetId
+   ↓
+Node updates:
+backgroundImageId = "bg_space"
+```
+
+---
+
+## 🧠 KEY SHIFT
+
+No file paths ever in UI.
+
+Only:
+
+* assetId
+* registry lookup
+* preview rendering
+
+---
+
+# 🧱 5. EFFECT BUILDER UI
+
+This is where creators define behavior safely.
+
+Instead of writing JSON:
+
+You build:
+
+### UI:
+
+* dropdown: effect type
+* field: itemId
+* field: amount
+* preview button
+
+---
+
+## EXAMPLE
+
+Creator selects:
+
+* Effect Type: grantItem
+* Item: Ruby Key
+* Amount: 1
+
+System generates:
+
+```json id="cr5"
+{
+  "type": "grantItem",
+  "payload": {
+    "itemId": "ruby_key",
+    "amount": 1
+  }
+}
+```
+
+---
+
+# 🧠 THIS IS EXTREMELY IMPORTANT
+
+You are converting:
+
+> “engine logic”
+
+into:
+
+# 🟣 constrained UI primitives
+
+This prevents broken hunts.
+
+---
+
+# 🧱 CREATOR MODE DATA FLOW
+
+```txt id="cr6"
+UI Input
+   ↓
+Schema Update
+   ↓
+Validator (light mode)
+   ↓
+Live Simulation Engine
+   ↓
+Preview State Update
+   ↓
+Render
+```
+
+---
+
+# 🧱 SAVE SYSTEM (DRAFT vs PUBLISHED)
+
+We now define:
+
+## 🟡 DRAFT STATE
+
+* editable
+* unstable
+* experimental
+* autosaved
+
+## 🟢 PUBLISHED STATE
+
+* validated
+* immutable snapshot
+* runtime-ready
+
+---
+
+## FLOW:
+
+```txt id="cr7"
+Draft Hunt
+   ↓ publish
+Validation Pipeline
+   ↓
+Frozen Hunt Package
+   ↓
+Runtime Execution
+```
+
+---
+
+# 🧱 DEBUG + INSPECTOR MODE (CREATOR TOOLING)
+
+Creators need visibility into:
+
+* current node
+* active flags
+* inventory state
+* transition history
+* effect history
+
+---
+
+## INSPECTOR DATA:
+
+```json id="cr8"
+{
+  "activeNode": "puzzle_001",
+  "flags": {},
+  "inventory": {},
+  "lastTransition": {},
+  "effectLog": []
+}
+```
+
+---
+
+# 🧠 THIS IS YOUR BIG PLATFORM SHIFT
+
+Before:
+
+> engine executes hunts
+
+Now:
+
+> engine simulates, edits, validates, and executes hunts
+
+That is what separates:
+
+* game engine
+* from creator platform
+
+---
+
+# 🚨 CRITICAL ARCHITECTURAL RULE (FINAL)
+
+## The Creator Dashboard MUST NOT bypass:
+
+* Transition Engine
+* Effect Engine
+* Validation Layer
+* Registry System
+
+Instead it uses them in:
+
+# “simulation mode”
+
+---
+
+# 🧱 WHAT YOU NOW HAVE (FULL STACK)
+
+You are now complete across:
+
+## ENGINE CORE
+
+* nodes
+* effects
+* transitions
+* state
+* registries
+* validation
+
+## PLATFORM CORE
+
+* draft system
+* simulation mode
+* asset picker
+* node editor binding
+* effect builder
+* inspector
+
+---
+
+# 🚀 NEXT STEP (IMPORTANT)
+
+Now we move into the final missing structural layer:
+
+# 👉 NODE GRAPH ENGINE (VISUAL CREATOR SYSTEM)
+
+This defines:
+
+* graph rendering
+* node positioning
+* edge connections
+* visual transitions
+* drag/drop layout
+* real-time validation overlay
+* simulation overlays on graph
+
+This is where your system becomes:
+
+# “Unreal Engine meets story editor meets game OS”
+
+---
+
+If you’re ready, next step is:
+
+# 🧱 VISUAL NODE GRAPH ENGINE (CREATOR INTERFACE V1)
