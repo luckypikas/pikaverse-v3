@@ -1,0 +1,356 @@
+Good — now we move from “definitions” into something that actually makes everything *work together reliably*.
+
+You’ve now locked:
+
+* hunt contract
+* node contract
+* runtime state model
+* registry thinking
+* asset system direction
+* creator tooling direction
+
+So the next missing layer is the one that connects everything:
+
+# 🧱 THE LOADER + VALIDATION PIPELINE (ENGINE BOOT STRAP V1)
+
+This is where V3 becomes a real engine instead of a structured dataset.
+
+---
+
+# 🧠 WHAT THIS LAYER DOES
+
+When a hunt loads, we must guarantee:
+
+> “If it boots, it will not break mid-run.”
+
+So we introduce a strict pipeline:
+
+```txt
+HUNT JSON
+   ↓
+VALIDATION
+   ↓
+REGISTRY BUILD
+   ↓
+REFERENCE RESOLUTION
+   ↓
+RUNTIME HYDRATION
+   ↓
+GAME START
+```
+
+This is your **engine boot contract**.
+
+---
+
+# 🧱 STEP 1 — VALIDATION LAYER
+
+This is the gatekeeper.
+
+## ✅ PURPOSE
+
+Reject broken hunts BEFORE they enter runtime.
+
+---
+
+## 🧠 VALIDATION CHECKS
+
+We split into 4 categories:
+
+### 1. STRUCTURE VALIDATION
+
+* schemaVersion exists
+* nodes array exists
+* required fields present
+* correct types
+
+---
+
+### 2. ID VALIDATION
+
+* no duplicate node IDs
+* no duplicate asset IDs
+* no duplicate item/reward IDs
+
+---
+
+### 3. REFERENCE VALIDATION
+
+This is critical:
+
+* every `node.transition.targetNodeId` exists
+* every `assetId` exists
+* every `itemId` exists
+* every `rewardId` exists
+* every sponsorId exists
+
+---
+
+### 4. LOGIC VALIDATION (lightweight V1)
+
+We avoid heavy logic here, but check:
+
+* no node has no exit path (unless type = end/deadEnd)
+* no orphaned nodes
+* no invalid interaction types
+* no invalid presentation types
+
+---
+
+## 🧠 OUTPUT
+
+```json id="v1val"
+{
+  "valid": true,
+  "errors": [],
+  "warnings": []
+}
+```
+
+Warnings ≠ failure. Errors = stop execution.
+
+---
+
+# 🧱 STEP 2 — REGISTRY BUILDING
+
+Once valid, we build fast lookup structures.
+
+---
+
+## 🧠 WHY THIS EXISTS
+
+Raw arrays are slow and unsafe for runtime:
+
+```txt
+nodes.find(...)
+```
+
+We convert to:
+
+```txt
+nodeRegistry.get(id)
+```
+
+---
+
+## 🧱 REQUIRED REGISTRIES
+
+We build:
+
+### Core
+
+* NodeRegistry
+* AssetRegistry
+* ItemRegistry
+* RewardRegistry
+* SponsorRegistry
+* ThemeRegistry
+
+---
+
+## 🧠 EXAMPLE
+
+Input:
+
+```json
+nodes: [
+  { "id": "start_001" }
+]
+```
+
+Becomes:
+
+```js id="reg1"
+NodeRegistry = {
+  start_001: nodeObject
+}
+```
+
+---
+
+# 🧱 STEP 3 — REFERENCE RESOLUTION
+
+This is where IDs become real objects.
+
+---
+
+## BEFORE (raw schema)
+
+```json
+"backgroundImageId": "bg_space"
+```
+
+---
+
+## AFTER (resolved)
+
+```js id="res1"
+backgroundImage: {
+  id: "bg_space",
+  src: "assets/bg_space.webp"
+}
+```
+
+---
+
+## 🧠 RULE
+
+Runtime NEVER looks up IDs directly.
+
+It always uses resolved objects.
+
+---
+
+# 🧱 STEP 4 — RUNTIME HYDRATION
+
+This creates the **live playable world state**.
+
+---
+
+## OUTPUT STRUCTURE
+
+```json id="rtctx"
+{
+  "hunt": {},
+  "registries": {},
+  "resolvedAssets": {},
+  "runtimeState": {},
+  "activeNode": {},
+  "metadata": {}
+}
+```
+
+---
+
+## 🧠 KEY IDEA
+
+At this stage:
+
+> the engine no longer sees JSON as “data”
+
+It sees a **fully wired execution graph**
+
+---
+
+# 🧱 STEP 5 — ENGINE START
+
+Finally:
+
+```txt id="start1"
+GameRuntime.start(runtimeContext)
+```
+
+At this point:
+
+* no schema checks
+* no lookups
+* no validation
+
+Only execution.
+
+---
+
+# 🚨 THIS IS THE MOST IMPORTANT RULE
+
+## VALIDATION AND RESOLUTION NEVER RUN DURING GAMEPLAY
+
+Only at boot.
+
+Why?
+
+Because:
+
+* performance
+* determinism
+* multiplayer readiness
+* debug clarity
+
+---
+
+# 🧠 WHY THIS STEP IS THE REAL BREAKPOINT
+
+Everything before this was:
+
+> “we define what the world is”
+
+This step is:
+
+> “we define how the world becomes playable”
+
+That’s the transition from:
+
+* design system
+  to
+* engine architecture
+
+---
+
+# 🧱 FILE STRUCTURE (WHAT YOU NOW BUILD)
+
+```txt
+runtime/
+├── bootstrap/
+│   ├── loadHunt.js
+│   ├── validateHunt.js
+│   ├── buildRegistries.js
+│   ├── resolveReferences.js
+│   ├── createRuntimeContext.js
+│   └── startRuntime.js
+```
+
+---
+
+# 🧠 WHAT YOU’VE NOW ACHIEVED
+
+You now have a full pipeline:
+
+### ✔ Data Model
+
+Hunt Contract
+
+### ✔ Execution Model
+
+Node Contract
+
+### ✔ State Model
+
+Runtime State
+
+### ✔ Asset Model
+
+Registry System
+
+### ✔ Engine Model
+
+Validation → Hydration → Execution
+
+---
+
+# 🚀 NEXT STEP (VERY IMPORTANT)
+
+Now that the engine foundation is complete, the next layer is:
+
+# 👉 EFFECT EXECUTION ENGINE (V2)
+
+This is where we define:
+
+* how effects are interpreted
+* when they trigger
+* how they mutate state safely
+* how they stay deterministic
+* how creators define behavior safely
+
+This is the *last core runtime system* before you move into:
+
+* creator dashboard wiring
+* node editor behavior
+* visual tooling
+* asset picker integration
+
+---
+
+If you’re ready, next we lock:
+
+# 🧠 EFFECT ENGINE + STATE MUTATION RULES
+
+This is where V3 becomes *behaviorally real*.
