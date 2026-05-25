@@ -1,0 +1,501 @@
+Good. Now we stop designing “systems” and define something stricter:
+
+# 🧱 CREATOR TOOLING IMPLEMENTATION CONTRACTS (V1)
+
+This is the layer that determines whether your dashboard becomes:
+
+* stable and scalable
+  or
+* a permanently fragile UI layer over a strong engine
+
+We’re locking **how every tool talks to the engine**.
+
+---
+
+# 🧠 CORE PRINCIPLE
+
+## The UI is not allowed to “do things”
+
+It only:
+
+* sends commands
+* receives results
+* renders state
+
+So we define a single rule:
+
+# ❌ No direct state mutation from UI
+
+# ✅ All changes go through Command Contracts
+
+---
+
+# 🧱 1. COMMAND SYSTEM (THE ONLY WRITE PATH)
+
+Everything in the creator dashboard becomes a **command**.
+
+---
+
+## 🧠 COMMAND FORMAT
+
+```json id="ct0"
+{
+  "type": "commandType",
+  "payload": {},
+  "meta": {
+    "workspaceId": "graph",
+    "timestamp": 123456
+  }
+}
+```
+
+---
+
+## 🧠 WHY THIS MATTERS
+
+This gives you:
+
+* undo/redo
+* replay of edits
+* validation before execution
+* batching
+* multiplayer later
+* audit trail
+
+---
+
+# 🧱 2. CORE COMMAND SET (V1)
+
+These are your **entire creator API surface**.
+
+---
+
+## 🟣 NODE COMMANDS
+
+### Create Node
+
+```json id="ct1"
+{
+  "type": "node.create",
+  "payload": {
+    "nodeType": "puzzle",
+    "position": { "x": 120, "y": 340 }
+  }
+}
+```
+
+---
+
+### Update Node
+
+```json id="ct2"
+{
+  "type": "node.update",
+  "payload": {
+    "nodeId": "puzzle_001",
+    "patch": {
+      "title": "New Title"
+    }
+  }
+}
+```
+
+---
+
+### Delete Node
+
+```json id="ct3"
+{
+  "type": "node.delete",
+  "payload": {
+    "nodeId": "puzzle_001"
+  }
+}
+```
+
+---
+
+### Connect Nodes (Transition)
+
+```json id="ct4"
+{
+  "type": "transition.create",
+  "payload": {
+    "from": "start_001",
+    "to": "puzzle_001",
+    "trigger": "auto"
+  }
+}
+```
+
+---
+
+# 🟡 ASSET COMMANDS
+
+### Import Asset
+
+```json id="ct5"
+{
+  "type": "asset.import",
+  "payload": {
+    "file": "blob_or_file_reference",
+    "kind": "image"
+  }
+}
+```
+
+---
+
+### Assign Asset
+
+```json id="ct6"
+{
+  "type": "asset.assign",
+  "payload": {
+    "nodeId": "node_001",
+    "assetId": "bg_space"
+  }
+}
+```
+
+---
+
+# 🟢 EFFECT COMMANDS
+
+### Add Effect
+
+```json id="ct7"
+{
+  "type": "effect.add",
+  "payload": {
+    "nodeId": "puzzle_001",
+    "scope": "onEnter",
+    "effect": {
+      "type": "grantItem",
+      "payload": {
+        "itemId": "ruby_key",
+        "amount": 1
+      }
+    }
+  }
+}
+```
+
+---
+
+# 🔵 SIMULATION COMMANDS
+
+### Run Simulation
+
+```json id="ct8"
+{
+  "type": "sim.run",
+  "payload": {
+    "startNodeId": "start_001"
+  }
+}
+```
+
+---
+
+### Step Simulation
+
+```json id="ct9"
+{
+  "type": "sim.step",
+  "payload": {}
+}
+```
+
+---
+
+### Reset Simulation
+
+```json id="ct10"
+{
+  "type": "sim.reset",
+  "payload": {}
+}
+```
+
+---
+
+# 🧱 3. COMMAND PIPELINE (CRITICAL ARCHITECTURE)
+
+Every command follows this flow:
+
+```txt id="ct11"
+UI Action
+   ↓
+Command Builder
+   ↓
+Validation Layer
+   ↓
+Command Executor
+   ↓
+Engine Mutation
+   ↓
+Event Emission
+   ↓
+UI Sync
+```
+
+---
+
+# 🧠 4. VALIDATION CONTRACT (PRE-EXECUTION)
+
+Before ANY command runs:
+
+## CHECKS:
+
+### ✔ schema validity
+
+### ✔ node existence
+
+### ✔ asset existence
+
+### ✔ transition validity
+
+### ✔ effect validity
+
+### ✔ permissions (workspace rules)
+
+---
+
+## OUTPUT:
+
+```json id="ct12"
+{
+  "valid": true,
+  "errors": [],
+  "warnings": []
+}
+```
+
+---
+
+# 🧱 5. COMMAND EXECUTION ENGINE
+
+This is your internal router:
+
+```txt id="ct13"
+command.type → handler(command.payload)
+```
+
+---
+
+## EXAMPLE HANDLER MAP
+
+```js id="ct14"
+const handlers = {
+  "node.create": createNode,
+  "node.update": updateNode,
+  "node.delete": deleteNode,
+  "transition.create": createTransition,
+  "asset.assign": assignAsset,
+  "effect.add": addEffect,
+  "sim.run": runSimulation
+};
+```
+
+---
+
+# 🧱 6. STATE UPDATE CONTRACT
+
+All changes produce:
+
+## ✔ new immutable state snapshot
+
+```json id="ct15"
+{
+  "before": {},
+  "after": {},
+  "diff": {}
+}
+```
+
+This feeds:
+
+* inspector system
+* undo system
+* simulation history
+
+---
+
+# 🧱 7. UNDO / REDO SYSTEM (CRITICAL FOR CREATOR UX)
+
+Built directly from command history.
+
+---
+
+## MODEL:
+
+```txt id="ct16"
+commandHistory[]
+undoStack[]
+redoStack[]
+```
+
+---
+
+## RULE:
+
+* every command is reversible
+* no “special cases”
+
+---
+
+# 🧱 8. UI → ENGINE SYNC RULES
+
+## IMPORTANT:
+
+### UI NEVER:
+
+* edits state directly
+* modifies registries directly
+* touches runtime state
+
+### UI ALWAYS:
+
+* emits commands
+* waits for result
+* re-renders from engine state
+
+---
+
+# 🧱 9. REAL-TIME UPDATE MODEL
+
+To keep graph smooth:
+
+## BATCHING RULE:
+
+```txt id="ct17"
+UI events → batch → 16ms window → single command flush
+```
+
+This prevents:
+
+* UI lag
+* state thrashing
+* graph jitter
+
+---
+
+# 🧱 10. TOOL PLUG-IN CONTRACT (FUTURE EXTENSION SYSTEM)
+
+Each tool must implement:
+
+```json id="ct18"
+{
+  "toolId": "graphEditor",
+  "commandsSupported": [
+    "node.create",
+    "node.update",
+    "transition.create"
+  ],
+  "uiPanels": ["graph", "inspector"]
+}
+```
+
+---
+
+# 🧠 WHY THIS LAYER IS CRITICAL
+
+Because it guarantees:
+
+## ✔ UI consistency
+
+## ✔ engine integrity
+
+## ✔ debug reproducibility
+
+## ✔ undo/redo support
+
+## ✔ simulation correctness
+
+## ✔ future multiplayer readiness
+
+---
+
+# 🚨 MOST IMPORTANT RULE IN V3 NOW
+
+## The engine never trusts the UI.
+
+It only trusts:
+
+# validated commands
+
+---
+
+# 🧱 WHAT YOU NOW HAVE (FULL PLATFORM COMPLETED)
+
+At this point, V3 is structurally complete:
+
+---
+
+## 🧠 ENGINE CORE
+
+* Node Engine
+* Transition Engine
+* Effect Engine
+* Runtime State
+* Registry System
+
+---
+
+## 🧪 SAFETY + DEBUG
+
+* Validation Layer
+* Inspector System
+* Event Stream
+* Snapshot System
+
+---
+
+## 🎨 CREATOR SYSTEM
+
+* Graph Engine
+* Asset Picker
+* Effect Builder
+* Simulation Engine
+
+---
+
+## 🧱 UI ARCHITECTURE
+
+* Workspace System
+* Docking System
+* Tool Registry
+* Panel System
+
+---
+
+## 🧾 CONTROL LAYER (JUST BUILT)
+
+* Command System
+* Execution Pipeline
+* Undo/Redo
+* Validation Gates
+* Tool Contracts
+
+---
+
+# 🚀 FINAL STEP BEFORE IMPLEMENTATION (OPTIONAL BUT POWERFUL)
+
+If you want to go fully production-grade next, the last missing layer is:
+
+# 👉 PERSISTENCE + VERSIONING + SAVE FORMAT ENGINE
+
+This defines:
+
+* how hunts are stored on disk/cloud
+* version migrations (v1 → v2 → v3 schema upgrades)
+* draft vs published storage rules
+* diff-based saving
+* collaboration future-proofing
+
+---
+
+If you're ready, next step is:
+
+# 🧱 HUNT PERSISTENCE + VERSIONING ENGINE (FINAL PLATFORM LAYER)
