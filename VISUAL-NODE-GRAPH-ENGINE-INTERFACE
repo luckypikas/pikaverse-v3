@@ -1,0 +1,414 @@
+Good. This is the moment your system becomes *visually usable*, not just architecturally correct.
+
+We’re now building:
+
+# 🧱 VISUAL NODE GRAPH ENGINE (CREATOR INTERFACE V1)
+
+This is the creator’s **primary mental model** of a hunt.
+
+Not JSON. Not tables.
+
+A **living graph of gameplay logic**.
+
+---
+
+# 🧠 CORE PRINCIPLE
+
+## The graph is NOT a visualization of data.
+
+It is:
+
+# a direct manipulation layer of the Transition Engine
+
+Meaning:
+
+* nodes = real engine nodes
+* edges = real transitions
+* edits = schema mutations
+* simulation = live runtime execution
+
+No “fake preview mode”.
+
+---
+
+# 🧱 GRAPH ENGINE HAS 5 CORE SYSTEMS
+
+```txt id="vg0"
+1. Graph Renderer
+2. Node Layout System
+3. Edge/Transition System
+4. Interaction Layer
+5. Simulation Overlay Layer
+```
+
+We define each.
+
+---
+
+# 🥇 1. GRAPH RENDERER (CANVAS OR DOM LAYER)
+
+This system renders:
+
+* nodes
+* connections
+* states
+* overlays
+
+---
+
+## NODE VISUAL MODEL
+
+Each node becomes:
+
+```txt id="vg1"
+┌─────────────────────┐
+│  node.title         │
+│  node.type          │
+│  status indicator   │
+│  entry / exit ports │
+└─────────────────────┘
+```
+
+---
+
+## NODE STATES
+
+You must visually encode:
+
+| State       | Meaning              |
+| ----------- | -------------------- |
+| normal      | default              |
+| start       | entry node           |
+| active      | currently simulating |
+| error       | validation failed    |
+| unreachable | orphaned             |
+| conditional | requires flags/items |
+
+---
+
+# 🥈 2. NODE LAYOUT SYSTEM (POSITIONING ENGINE)
+
+This is NOT cosmetic.
+
+It is structural UX.
+
+---
+
+## RULES:
+
+### ✔ Position is stored in schema
+
+```json id="vg2"
+{
+  "metadata": {
+    "x": 120,
+    "y": 340
+  }
+}
+```
+
+---
+
+## WHY THIS MATTERS
+
+Because:
+
+* creators arrange logic visually
+* layout becomes part of design intent
+* graph becomes reproducible
+* collaboration becomes possible
+
+---
+
+## OPTIONAL FUTURE:
+
+Auto-layout engine (later), but:
+
+# V1 = manual drag layout only
+
+---
+
+# 🥉 3. EDGE / TRANSITION SYSTEM
+
+Edges = actual runtime transitions.
+
+---
+
+## EDGE TYPES
+
+```txt id="vg3"
+solid → normal transition
+dashed → conditional transition
+red → fail transition
+blue → timer transition
+gold → choice transition
+```
+
+---
+
+## EDGE DATA MODEL
+
+```json id="vg4"
+{
+  "from": "puzzle_001",
+  "to": "end_001",
+  "type": "choice",
+  "triggerId": "choice_echo"
+}
+```
+
+---
+
+## 🧠 RULE
+
+Edges are NOT decoration.
+
+They are:
+
+# visual representations of Transition Engine rules
+
+---
+
+# 🧠 4. INTERACTION LAYER (CREATOR INPUT SYSTEM)
+
+This is where creators actually build.
+
+---
+
+## ACTIONS:
+
+### Node actions:
+
+* create node
+* delete node
+* edit node
+* duplicate node
+
+---
+
+### Edge actions:
+
+* drag from port → create transition
+* click edge → edit transition
+* delete edge → remove transition
+
+---
+
+### Global:
+
+* zoom
+* pan
+* multi-select
+* search node
+
+---
+
+# 🥶 CRITICAL UX RULE
+
+## No hidden logic
+
+Every interaction must map to:
+
+> schema mutation → validation → re-render
+
+---
+
+# 🧪 5. SIMULATION OVERLAY LAYER (MOST IMPORTANT)
+
+This is what makes V3 special.
+
+---
+
+## PURPOSE:
+
+Let creators RUN the graph without leaving editor.
+
+---
+
+## SIMULATION FLOW:
+
+```txt id="vg5"
+Select Start Node
+   ↓
+Run Transition Engine
+   ↓
+Run Effect Engine
+   ↓
+Highlight Active Node
+   ↓
+Animate Edge Taken
+   ↓
+Update State Panel
+```
+
+---
+
+## VISUAL INDICATORS:
+
+### Active Node:
+
+* glowing border
+* pulse animation
+
+### Traversed Edge:
+
+* animated flow line
+
+### Failed Transition:
+
+* red flash on edge
+
+---
+
+# 🧠 THIS IS A BIG SHIFT
+
+You are now building:
+
+> a **debuggable interactive simulation environment**
+
+NOT just a graph editor.
+
+---
+
+# 🧱 GRAPH ENGINE DATA FLOW
+
+```txt id="vg6"
+User drags edge
+   ↓
+Update schema (node transitions)
+   ↓
+Run validation
+   ↓
+Update registry preview
+   ↓
+Re-render graph
+```
+
+---
+
+# 🧱 COMPONENT BREAKDOWN (IMPLEMENTATION LEVEL)
+
+You will eventually have:
+
+---
+
+## GRAPH CORE
+
+```txt id="vg7"
+GraphCanvas
+NodeRenderer
+EdgeRenderer
+LayoutEngine
+```
+
+---
+
+## STATE BRIDGE
+
+```txt id="vg8"
+GraphStateSync
+SchemaBindingLayer
+SelectionManager
+```
+
+---
+
+## SIMULATION ENGINE
+
+```txt id="vg9"
+GraphSimulator
+StepExecutor
+StatePreviewEngine
+TransitionHighlighter
+```
+
+---
+
+## TOOLING
+
+```txt id="vg10"
+NodePalette
+AssetPicker (embedded)
+InspectorPanel
+EffectEditorPopup
+```
+
+---
+
+# 🧠 CRITICAL ARCHITECTURE RULE
+
+## The graph NEVER becomes a second system.
+
+It is only:
+
+# a visual interface for the same engine
+
+So:
+
+* same Transition Engine
+* same Effect Engine
+* same Validation Layer
+* same Registries
+
+---
+
+# 🚨 WHAT NOT TO DO
+
+Do NOT:
+
+* build separate graph logic engine
+* duplicate transition rules in UI
+* hardcode node behaviors in renderer
+* bypass schema for “UI convenience”
+
+That leads to fragmentation.
+
+---
+
+# 🧠 WHY THIS IS THE BREAKPOINT FEATURE
+
+This system is what transforms V3 into:
+
+* Unreal Blueprint equivalent
+* Unity Visual Scripting equivalent
+* Roblox Studio flow graph equivalent
+
+But tailored for:
+
+# narrative + interactive hunt design
+
+---
+
+# 🧱 FINAL RESULT
+
+Once complete, creators will be able to:
+
+* visually build hunts
+* simulate gameplay instantly
+* debug transitions live
+* inspect state in real time
+* edit without touching JSON
+* export clean runtime packages
+
+---
+
+# 🚀 NEXT STEP (FINAL ENGINE COMPLETION PHASE)
+
+After this, there is only ONE missing foundational layer:
+
+# 👉 RUNTIME INSPECTOR + DEBUG TOOLING SYSTEM (ENGINE VISIBILITY LAYER)
+
+This is what makes everything debuggable, replayable, and production-safe:
+
+* timeline replay
+* effect logs
+* state snapshots
+* transition history graph
+* performance tracing
+* live mutation watcher
+
+---
+
+If you’re ready, next step is:
+
+# 🧱 RUNTIME INSPECTOR SYSTEM (V1 OBSERVABILITY ENGINE)
